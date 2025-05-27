@@ -64,68 +64,20 @@ export const sendOTP = async (req: Request, res: Response) => {
   }
 };
 
-// Send OTP for phone verification
+// Send OTP for phone verification - DEPRECATED (SMS functionality removed)
 export const sendPhoneOTP = async (req: Request, res: Response) => {
   try {
     const { phone } = req.body;
-    console.log('Sending phone OTP request received for:', phone);
+    console.log('Phone OTP functionality has been removed');
 
-    if (!phone) {
-      console.log('Phone number is missing in request');
-      return res.status(400).json({ message: 'Phone number is required' });
-    }
-
-    // Check if there's a recent OTP that's not expired yet (within the last 2 minutes)
-    const twoMinutesAgo = new Date();
-    twoMinutesAgo.setMinutes(twoMinutesAgo.getMinutes() - 2);
-    
-    const recentOTP = await OTPVerification.findOne({
-      phone,
-      type: 'phone',
-      expiresAt: { $gt: new Date() },
-      createdAt: { $gt: twoMinutesAgo }
-    });
-    
-    if (recentOTP) {
-      console.log('Recent OTP already exists for this phone. Returning existing OTP info.');
-      return res.status(200).json({
-        message: 'OTP already sent. Please check your phone or wait before requesting a new code.',
-        phone,
-      });
-    }
-
-    // Generate OTP
-    const otp = generateOTP();
-    console.log('Generated phone OTP (not hashed):', otp);
-    const hashedOTP = hashOTP(otp);
-    console.log('Hashed phone OTP for storage:', hashedOTP);
-    const expiryTime = generateExpiryTime();
-
-    // Save OTP details
-    const otpRecord = await OTPVerification.create({
-      phone,
-      otp: hashedOTP,
-      expiresAt: expiryTime,
-      type: 'phone',
-    });
-    console.log('Phone OTP record created:', otpRecord);
-
-    // Send SMS with OTP
-    const smsSent = await sendVerificationSMS(phone, otp);
-    if (smsSent) {
-      console.log('Verification SMS sent with OTP');
-    } else {
-      console.log('SMS sending failed, but proceeding with OTP creation for testing');
-      // We'll still create the OTP record but log the failure
-    }
-
-    res.status(200).json({
-      message: 'OTP sent successfully',
-      phone,
+    // Return a message indicating this functionality is no longer available
+    return res.status(400).json({ 
+      message: 'SMS verification has been removed from this application', 
+      phone 
     });
   } catch (error) {
-    console.error('Error sending phone OTP:', error);
-    res.status(500).json({ message: 'Error sending phone OTP' });
+    console.error('Error in deprecated phone OTP function:', error);
+    res.status(500).json({ message: 'Error processing request' });
   }
 };
 
@@ -208,81 +160,19 @@ export const verifyOTP = async (req: Request, res: Response) => {
   }
 };
 
-// Verify Phone OTP
+// Verify Phone OTP - DEPRECATED (SMS functionality removed)
 export const verifyPhoneOTP = async (req: Request, res: Response) => {
   try {
     const { phone, otp } = req.body;
-    console.log('Verifying phone OTP:', { phone, otp });
+    console.log('Phone OTP verification functionality has been removed');
 
-    if (!phone || !otp) {
-      console.log('Missing phone or OTP');
-      return res.status(400).json({ message: 'Phone number and OTP are required' });
-    }
-
-    // Find all OTP records for this phone to debug
-    const allRecords = await OTPVerification.find({ phone, type: 'phone' });
-    console.log(`Found ${allRecords.length} OTP records for phone:`, phone);
-    
-    if (allRecords.length === 0) {
-      console.log('No OTP records found for this phone');
-      return res.status(400).json({ message: 'No verification code was sent to this phone number' });
-    }
-    
-    // Check each record manually to debug the issue
-    let matchFound = false;
-    let expiredFound = false;
-    let verifiedFound = false;
-    
-    // Calculate the hash of the provided OTP
-    const hashedOTP = hashOTP(otp);
-    console.log('Hashed phone OTP from request:', hashedOTP);
-    
-    for (const record of allRecords) {
-      console.log('Checking phone record:', {
-        id: record._id,
-        storedHash: record.otp,
-        expiresAt: record.expiresAt,
-        verified: record.verified,
-        now: new Date()
-      });
-      
-      if (record.otp === hashedOTP) {
-        matchFound = true;
-        
-        if (record.verified) {
-          verifiedFound = true;
-          console.log('Phone OTP already verified');
-        } else if (record.expiresAt < new Date()) {
-          expiredFound = true;
-          console.log('Phone OTP expired');
-        } else {
-          // Valid OTP found
-          console.log('Valid phone OTP found, marking as verified');
-          record.verified = true;
-          await record.save();
-          
-          return res.status(200).json({
-            message: 'Phone verified successfully',
-            phone,
-          });
-        }
-      }
-    }
-    
-    // Determine the appropriate error message
-    if (!matchFound) {
-      console.log('No matching phone OTP found');
-      return res.status(400).json({ message: 'Invalid verification code' });
-    } else if (expiredFound) {
-      return res.status(400).json({ message: 'Verification code has expired' });
-    } else if (verifiedFound) {
-      return res.status(400).json({ message: 'Verification code has already been used' });
-    }
-    
-    // This should not be reached, but just in case
-    return res.status(400).json({ message: 'Invalid or expired verification code' });
+    // Return a message indicating this functionality is no longer available
+    return res.status(400).json({ 
+      message: 'SMS verification has been removed from this application', 
+      phone 
+    });
   } catch (error) {
-    console.error('Error verifying phone OTP:', error);
-    res.status(500).json({ message: 'Error verifying phone OTP' });
+    console.error('Error in deprecated phone OTP verification function:', error);
+    res.status(500).json({ message: 'Error processing request' });
   }
 };
