@@ -1,4 +1,3 @@
-import express from 'express';
 import {
   createSponsorship,
   getPendingSponsorships,
@@ -8,8 +7,9 @@ import {
 } from '../controllers/sponsorshipController';
 import { authenticateToken } from '../middleware/auth';
 import { adminGuard } from '../middleware/authGuard';
+import { createRouter } from '../utils/routerHelper';
 
-const router = express.Router();
+const router = createRouter();
 
 // Public routes
 router.post('/', createSponsorship);

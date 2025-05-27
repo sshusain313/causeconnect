@@ -64,6 +64,7 @@ declare module 'express' {
     json: () => any;
     urlencoded: (options: { extended: boolean }) => any;
     static: (path: string, options?: any) => any;
+    Router: () => Router;
   };
   export default express;
 }

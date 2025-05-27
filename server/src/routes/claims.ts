@@ -1,8 +1,8 @@
-import express from 'express';
 import { createClaim, getRecentClaims, getClaimById, updateClaimStatus, getClaimsStats } from '../controllers/claimController';
 import { authenticateToken } from '../middleware/auth';
+import { createRouter } from '../utils/routerHelper';
 
-const router = express.Router();
+const router = createRouter();
 
 // Public routes
 router.post('/', createClaim);

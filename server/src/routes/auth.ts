@@ -1,13 +1,14 @@
-import express, { Request, Response, Router, NextFunction } from 'express';
+import { Request, Response, Router, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import User, { UserRole } from '../models/User';
 import { sendWelcomeEmail } from '../lib/email';
+import { createRouter } from '../utils/routerHelper';
 
 dotenv.config();
 
-const router: Router = express.Router();
+const router: Router = createRouter();
 const JWT_SECRET = process.env.JWT_SECRET as string;
 const TOKEN_EXPIRY = '1h';
 const REFRESH_TOKEN_EXPIRY = '7d';

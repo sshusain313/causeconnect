@@ -1,9 +1,10 @@
-import express, { Router } from 'express';
+import { Router } from 'express';
 import { authGuard, adminGuard } from '../middleware/authGuard';
 import causeController from '../controllers/causeController';
 import upload from '../middleware/fileUpload';
+import { createRouter } from '../utils/routerHelper';
 
-const router: Router = express.Router();
+const router: Router = createRouter();
 
 // Public routes
 router.get('/', causeController.getAllCauses);
