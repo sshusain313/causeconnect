@@ -29,7 +29,7 @@ declare module 'express' {
   }
 
   export interface Application extends EventEmitter {
-    use: (middleware: any) => Application;
+    use: (path: string | any, handler?: any) => Application;
     listen: (port: number, callback?: () => void) => Server;
     get: (path: string, ...handlers: any[]) => Application;
     post: (path: string, ...handlers: any[]) => Application;
@@ -51,7 +51,21 @@ declare module 'express' {
     (req: Request, res: Response, next: NextFunction): any;
   }
 
+  export interface Express {
+    json: () => any;
+    urlencoded: (options: { extended: boolean }) => any;
+    static: (path: string, options?: any) => any;
+  }
+
   export function Router(): Router;
+  
+  // Make the default export callable
+  const express: () => Application & { 
+    json: () => any;
+    urlencoded: (options: { extended: boolean }) => any;
+    static: (path: string, options?: any) => any;
+  };
+  export default express;
 }
 
 declare module 'cors';

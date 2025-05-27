@@ -124,7 +124,7 @@ causeSchema.methods.updateCurrentAmount = async function() {
   });
   
   // Calculate total amount from sponsorships
-  const totalAmount = sponsorships.reduce((sum, sponsorship) => {
+  const totalAmount = sponsorships.reduce((sum: number, sponsorship: any) => {
     return sum + (sponsorship.totalAmount || 0);
   }, 0);
   
