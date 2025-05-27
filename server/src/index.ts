@@ -32,7 +32,7 @@ app.use(cors({
   credentials: true
 }));
 
-// Configure Helmet for security headers with appropriate CSP
+// Configure Helmet for security headers with appropriate CSP - Updated for Render deployment
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
