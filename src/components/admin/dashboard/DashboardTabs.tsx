@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import config from '../../../config';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PendingCauses from './PendingCauses';
 import PendingSponsorships from './PendingSponsorships';
@@ -33,9 +32,7 @@ interface PendingSponsorship {
   contactName: string;
   email: string;
   toteQuantity: number;
-  distributionStartDate: string;
-  distributionEndDate: string;
-  distributionDate?: string; // Keeping for backward compatibility
+  distributionDate: string;
   createdAt: string;
 }
 
@@ -66,7 +63,7 @@ const DashboardTabs = () => {
   
   // Configure axios with authentication
   const authAxios = axios.create({
-    baseURL: config.apiUrl,
+    baseURL: 'http://localhost:5000/api',
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json'
