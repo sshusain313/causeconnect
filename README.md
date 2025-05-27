@@ -1,18 +1,68 @@
-# Welcome to your Lovable project
+# CauseConnect
 
-## Project info
+CauseConnect is a web application that allows users to create, sponsor, and claim tote bags for various causes. The application uses React/TypeScript for the frontend and Node.js/Express/MongoDB for the backend.
 
-**URL**: https://lovable.dev/projects/2fc79fc2-8ba8-48d6-8c2d-63d5920e56fd
+## Features
 
-## How can I edit this code?
+- Authentication system with JWT tokens
+- Cause management (create, sponsor, claim, waitlist)
+- Story sharing functionality
+- File upload capabilities for images
+- Statistics API
+- Payment processing with Razorpay
 
-There are several ways of editing your application.
+## Deployment Instructions
 
-**Use Lovable**
+This application is set up for deployment with Netlify (frontend) and Render (backend).
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/2fc79fc2-8ba8-48d6-8c2d-63d5920e56fd) and start prompting.
+### Frontend Deployment (Netlify)
 
-Changes made via Lovable will be committed automatically to this repo.
+1. **Sign up/login to Netlify**: Go to [Netlify](https://app.netlify.com/) and sign up or log in with your GitHub account.
+
+2. **Import your GitHub repository**:
+   - Click "New site from Git"
+   - Select GitHub as your Git provider
+   - Authorize Netlify to access your GitHub repositories
+   - Select the `sshusain313/causeconnect` repository
+
+3. **Configure build settings**:
+   - Build command: `npm run build`
+   - Publish directory: `build` (or `dist` depending on your React setup)
+   - Click "Deploy site"
+
+4. **Set up environment variables**:
+   - In the Netlify dashboard, go to Site settings > Build & deploy > Environment
+   - Add your frontend environment variables (like `REACT_APP_API_URL`)
+
+### Backend Deployment (Render)
+
+1. **Sign up/login to Render**: Go to [Render](https://render.com/) and sign up or log in with your GitHub account.
+
+2. **Create a new Web Service**:
+   - Click "New" and select "Web Service"
+   - Connect your GitHub repository
+   - Select the `sshusain313/causeconnect` repository
+
+3. **Configure your service**:
+   - Name: `causeconnect-api`
+   - Root Directory: `server` (since your backend is in the server directory)
+   - Environment: `Node`
+   - Build Command: `npm install`
+   - Start Command: `npm start` (or whatever command starts your Express server)
+
+4. **Set up environment variables**:
+   - In the Render dashboard, add your environment variables:
+     - `MONGODB_URI`: Your MongoDB connection string
+     - `JWT_SECRET`: Your JWT secret
+     - `EMAIL_SERVICE`, `EMAIL_USER`, `EMAIL_PASSWORD`: Email configuration
+     - `ADMIN_EMAIL`, `ADMIN_PASSWORD`: Admin credentials
+     - `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`: Payment gateway credentials
+     - `PORT`: 10000 (Render will override this with its own port)
+     - `NODE_ENV`: production
+
+### Connecting Frontend to Backend
+
+Once your backend is deployed, update the `apiUrl` in the frontend configuration to point to your Render backend URL.
 
 **Use your preferred IDE**
 
