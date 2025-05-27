@@ -6,7 +6,7 @@ const config = {
   },
   // For production deployment
   production: {
-    apiUrl: 'https://causeconnect-api.onrender.com/api',
+    apiUrl: 'https://causeconnect-mp9a.onrender.com/api',
   }
 };
 
