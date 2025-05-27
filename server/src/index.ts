@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import path from 'path';
+import helmet from 'helmet';
 import connectToDatabase from './lib/mongodb';
 import authRoutes from './routes/auth';
 import causeRoutes from './routes/causes';
@@ -26,9 +27,24 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? 'https://your-production-domain.com' 
+    ? ['https://causeconnect-application.windsurf.build', 'https://causeconnect-application.netlify.app'] 
     : ['http://localhost:8080', 'http://localhost:8081', 'http://localhost:3000'], // Allow development ports
   credentials: true
+}));
+
+// Configure Helmet for security headers with appropriate CSP
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://fonts.googleapis.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      imgSrc: ["'self'", "data:", "https://*"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://fonts.googleapis.com"],
+      connectSrc: ["'self'", "https://*"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
 }));
 
 // Configure static file serving for uploaded files
