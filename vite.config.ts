@@ -13,18 +13,11 @@ export default defineConfig({
     sourcemap: false,
     minify: true,
     rollupOptions: {
-      external: [],
       output: {
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'vendor-react';
-            }
-            if (id.includes('axios')) {
-              return 'vendor-axios';
-            }
-            return 'vendor';
-          }
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover'],
+          'vendor-utils': ['axios', 'clsx', 'tailwind-merge'],
         }
       },
     },
