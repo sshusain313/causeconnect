@@ -2,6 +2,7 @@ import express, { Request, Response, Application } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import path from 'path';
+import helmet from 'helmet';
 import authRoutes from './routes/auth';
 import causeRoutes from './routes/causes';
 import sponsorshipRoutes from './routes/sponsorshipRoutes';
@@ -24,6 +25,22 @@ app.use(cors({
     ? ['https://causeconnect.netlify.app', 'https://www.causeconnect.netlify.app'] 
     : ['http://localhost:8080', 'http://localhost:8081', 'http://localhost:3000'], // Allow development ports
   credentials: true
+}));
+
+// Configure Helmet for security headers with appropriate CSP - Updated for Render deployment
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://fonts.googleapis.com", "https://*.vercel.app"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://*.vercel.app", "https://gs-extension-embeds-final.vercel.app"],
+      styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://*.vercel.app", "https://gs-extension-embeds-final.vercel.app"],
+      imgSrc: ["'self'", "data:", "https://*", "blob:"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://fonts.googleapis.com", "https://*.vercel.app"],
+      connectSrc: ["'self'", "https://*"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
 }));
 
 // Configure static file serving for uploaded files
