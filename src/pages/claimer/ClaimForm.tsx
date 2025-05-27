@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import config from '../../config';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
@@ -392,7 +393,7 @@ const ClaimFormPage = () => {
                   <div className="flex items-center space-x-4">
                     <div className="w-16 h-16 rounded-md overflow-hidden">
                       <img 
-                        src={cause.imageUrl.startsWith('http') ? cause.imageUrl : `http://localhost:5000${cause.imageUrl}`} 
+                        src={cause.imageUrl.startsWith('http') ? cause.imageUrl : `${config.baseUrl}${cause.imageUrl}`} 
                         alt={cause.title} 
                         className="w-full h-full object-cover" 
                       />

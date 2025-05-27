@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import config from '../config';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -103,7 +104,7 @@ const CreateCause = () => {
       
       try {
         // Use a direct fetch call with FormData for file upload
-        const fetchResponse = await fetch('http://localhost:5000/api/causes', {
+        const fetchResponse = await fetch(`${config.apiUrl}/causes`, {
           method: 'POST',
           headers: {
             'Authorization': token ? `Bearer ${token}` : ''

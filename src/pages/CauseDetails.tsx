@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import config from '../config';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { fetchCause } from '@/services/apiServices';
@@ -41,7 +41,7 @@ const CauseDetailsPage = () => {
     queryFn: async () => {
       try {
         // In a real app, this would fetch from the actual API endpoint
-        const response = await fetch(`http://localhost:5000/api/causes/${id}`);
+        const response = await fetch(`${config.apiUrl}/causes/${id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch cause details');
         }
@@ -154,7 +154,7 @@ const CauseDetailsPage = () => {
         <HeroSection 
           title={cause.title}
           tagline={cause.description}
-          heroImageUrl={cause.imageUrl.startsWith('http') ? cause.imageUrl : `http://localhost:5000${cause.imageUrl}`}
+          heroImageUrl={cause.imageUrl.startsWith('http') ? cause.imageUrl : `${config.baseUrl}${cause.imageUrl}`}
           onAction={handleAction}
           onSponsor={handleSponsor}
           onShare={handleShare}

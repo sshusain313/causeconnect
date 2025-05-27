@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import config from '../../../config';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PendingCauses from './PendingCauses';
 import PendingSponsorships from './PendingSponsorships';
@@ -65,7 +66,7 @@ const DashboardTabs = () => {
   
   // Configure axios with authentication
   const authAxios = axios.create({
-    baseURL: 'http://localhost:5000/api',
+    baseURL: config.apiUrl,
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json'

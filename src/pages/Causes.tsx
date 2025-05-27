@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import config from '../config';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -51,7 +52,7 @@ const CausesPage = () => {
       try {
         setLoading(true);
         // Fetch causes with their sponsorships
-        const response = await axios.get('http://localhost:5000/api/causes', {
+        const response = await axios.get(`${config.apiUrl}/causes`, {
           params: { 
             status: 'approved',
             include: 'sponsorships'
@@ -298,7 +299,7 @@ const CausesPage = () => {
                   title={`View details for ${cause.title}`}
                 >
                   <img 
-                    src={cause.imageUrl.startsWith('http') ? cause.imageUrl : `http://localhost:5000${cause.imageUrl}`} 
+                    src={cause.imageUrl.startsWith('http') ? cause.imageUrl : `${config.baseUrl}${cause.imageUrl}`} 
                     alt={cause.title} 
                     className="w-full h-48 object-cover hover:opacity-90 transition-opacity" 
                     onError={(e) => {

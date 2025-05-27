@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import config from '../config';
 import { User, UserRole } from '@/types';
 
 interface AuthResult {
@@ -45,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // For testing with the real backend
       try {
         // Make a real API call to get a token
-        const response = await fetch('http://localhost:5000/api/auth/login', {
+        const response = await fetch(`${config.apiUrl}/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -141,7 +142,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         console.log('Registering user with API:', { email, name, password, role });
         
-        const response = await fetch('http://localhost:5000/api/auth/register', {
+        const response = await fetch(`${config.apiUrl}/auth/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

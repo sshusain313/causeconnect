@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import config from '../../config';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import {
 import { toast } from '@/components/ui/use-toast';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = config.apiUrl;
 
 const OtpVerificationPage = () => {
   const navigate = useNavigate();
