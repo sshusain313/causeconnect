@@ -1,8 +1,6 @@
-# Welcome to your Lovable project
+# CauseBags
 
-## Project info
-
-**URL**: https://lovable.dev/projects/2fc79fc2-8ba8-48d6-8c2d-63d5920e56fd
+CauseBags is a web application that allows users to create, sponsor, and claim tote bags for various causes. The application is built with a React/TypeScript frontend and Node.js/Express/MongoDB backend.
 
 ## How can I edit this code?
 
@@ -34,6 +32,53 @@ npm i
 
 # Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
+
+# Step 5: Set up your environment variables (see Environment Variables section below)
+```
+
+## Environment Variables
+
+This project uses environment variables for configuration. These should never be committed to the repository for security reasons.
+
+### Server Environment Variables
+
+1. Copy the example environment file to create your own:
+
+```sh
+cp server/.env.example server/.env
+```
+
+2. Edit the `.env` file with your actual credentials:
+
+```
+# Database connection
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+
+# Email configuration
+EMAIL_SERVICE=gmail
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASSWORD=your_app_password
+
+# SMS configuration (Twilio)
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_PHONE_NUMBER=your_twilio_phone_number
+
+# Admin credentials
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=your_admin_password
+
+# Payment gateway
+RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+```
+
+### Important Security Notes
+
+- Never commit `.env` files to version control
+- Keep your API keys and secrets secure
+- The `.env` file is already added to `.gitignore` to prevent accidental commits
 ```
 
 **Edit a file directly in GitHub**
