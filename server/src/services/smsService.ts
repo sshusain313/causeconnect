@@ -16,6 +16,20 @@ export const sendSMS = async (phone: string, otp: string) => {
 };
 
 /**
+ * Simulates sending a verification SMS
+ * @param phone Phone number to send to
+ * @param otp OTP code to send
+ * @returns Simulated response object
+ */
+export const sendVerificationSMS = async (phone: string, otp: string) => {
+  console.log(`[SMS SIMULATION] Would send verification OTP ${otp} to phone number ${phone}`);
+  return { 
+    sid: 'SIMULATED_SID', 
+    status: 'delivered' 
+  };
+};
+
+/**
  * Simulates verifying a phone number with an OTP
  * @param phone Phone number to verify
  * @param otp OTP code to verify
