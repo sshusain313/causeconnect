@@ -4,7 +4,7 @@ echo "Applying direct fix for server deployment..."
 
 # Force install helmet package
 echo "Installing helmet package directly..."
-pnpm add helmet --force
+npm install helmet --force
 
 # Create a simple index.js file that bypasses TypeScript
 echo "Creating direct JavaScript entry point..."
