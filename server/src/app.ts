@@ -84,4 +84,24 @@ app.get('/api/health', (req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', message: 'Server is running' });
 });
 
+// Root route handler
+app.get('/', (req: Request, res: Response) => {
+  res.status(200).json({
+    message: 'CauseConnect API Server',
+    version: '1.0.0',
+    documentation: '/api/health',
+    endpoints: [
+      '/api/auth',
+      '/api/causes',
+      '/api/sponsorships',
+      '/api/claims',
+      '/api/upload',
+      '/api/otp',
+      '/api/profile',
+      '/api/admin',
+      '/api/health'
+    ]
+  });
+});
+
 export default app;
