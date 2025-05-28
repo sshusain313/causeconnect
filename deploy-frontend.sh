@@ -43,7 +43,8 @@ fi
 
 # Install dependencies
 print_status "Installing dependencies..."
-npm ci || npm install
+# Using npm install directly instead of npm ci to avoid lock file sync issues
+npm install
 
 # Ensure required dependencies are installed
 for pkg in "axios" "vite"; do

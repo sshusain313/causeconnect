@@ -56,7 +56,8 @@ fi
 
 # Install dependencies
 print_status "Installing dependencies..."
-npm ci || npm install
+# Using npm install directly instead of npm ci to avoid lock file sync issues
+npm install
 
 # Check for TypeScript
 if ! command -v tsc &> /dev/null; then
