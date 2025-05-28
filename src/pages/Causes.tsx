@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import axios from 'axios';
 import { getImageUrl, handleImageError } from '@/utils/imageUtils';
+import config from '@/config';
 
 interface Cause {
   _id: string;
@@ -52,7 +53,8 @@ const CausesPage = () => {
       try {
         setLoading(true);
         // Fetch causes with their sponsorships
-        const response = await axios.get('http://localhost:5000/api/causes', {
+        console.log('Using API URL:', config.apiUrl);
+        const response = await axios.get(`${config.apiUrl}/causes`, {
           params: { 
             status: 'approved',
             include: 'sponsorships'
