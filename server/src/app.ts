@@ -11,6 +11,7 @@ import uploadRoutes from './routes/uploadRoutes';
 import otpRoutes from './routes/otpRoutes';
 import { authGuard, adminGuard } from './middleware/authGuard';
 import configureStaticFiles from './middleware/staticFiles';
+import copyUploadsToPublic from './utils/copyUploadsToPublic';
 
 // Create Express app
 const app: Application = express();
@@ -23,7 +24,7 @@ app.use(cookieParser());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://causeconnect.netlify.app', 'https://www.causeconnect.netlify.app'] 
-    : ['http://localhost:8080', 'http://localhost:8081', 'http://localhost:3000'], // Allow development ports
+    : ['http://localhost:8080', 'http://localhost:8081', 'http://localhost:8082', 'http://localhost:8083', 'http://localhost:3000'], // Allow development ports
   credentials: true
 }));
 
@@ -35,16 +36,21 @@ app.use(helmet({
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://fonts.googleapis.com", "https://*.vercel.app"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://*.vercel.app", "https://gs-extension-embeds-final.vercel.app"],
       styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://*.vercel.app", "https://gs-extension-embeds-final.vercel.app"],
-      imgSrc: ["'self'", "data:", "https://*", "blob:"],
+      imgSrc: ["'self'", "data:", "https://*", "blob:", "http://localhost:*"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://fonts.googleapis.com", "https://*.vercel.app"],
-      connectSrc: ["'self'", "https://*"],
+      connectSrc: ["'self'", "https://*", "http://localhost:*"],
     },
   },
   crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 // Configure static file serving for uploaded files
 configureStaticFiles(app);
+
+// Copy uploaded files to public directory for frontend access
+copyUploadsToPublic();
+console.log('Copied uploaded files to public directory');
 
 // Routes
 // Using type assertion to fix TypeScript errors

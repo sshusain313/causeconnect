@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import axios from 'axios';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 interface Cause {
   _id: string;
@@ -298,13 +299,10 @@ const CausesPage = () => {
                   title={`View details for ${cause.title}`}
                 >
                   <img 
-                    src={cause.imageUrl.startsWith('http') ? cause.imageUrl : `http://localhost:5000${cause.imageUrl}`} 
+                    src={getImageUrl(cause.imageUrl)} 
                     alt={cause.title} 
                     className="w-full h-48 object-cover hover:opacity-90 transition-opacity" 
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = 'https://via.placeholder.com/400x200?text=Image+Not+Available';
-                    }}
+                    onError={(e) => handleImageError(e)}
                   />
                 </div>
                 <CardContent className="p-6">

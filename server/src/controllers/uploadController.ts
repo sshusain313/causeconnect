@@ -3,6 +3,28 @@ import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
 
+// Function to copy uploaded file to public directory
+const copyToPublic = (filename: string): string => {
+  const sourcePath = path.join(__dirname, '../../uploads', filename);
+  const publicUploadsDir = path.join(__dirname, '../../../public/uploads');
+  const destPath = path.join(publicUploadsDir, filename);
+  
+  // Create public uploads directory if it doesn't exist
+  if (!fs.existsSync(publicUploadsDir)) {
+    console.log(`Creating public uploads directory: ${publicUploadsDir}`);
+    fs.mkdirSync(publicUploadsDir, { recursive: true });
+  }
+  
+  try {
+    fs.copyFileSync(sourcePath, destPath);
+    console.log(`Copied ${filename} to public uploads directory`);
+    return `/uploads/${filename}`;
+  } catch (err) {
+    console.error(`Error copying ${filename} to public directory: ${err}`);
+    return `/uploads/${filename}`; // Return the path anyway
+  }
+};
+
 // Create uploads directory if it doesn't exist
 const uploadDir = path.join(__dirname, '../../uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -72,6 +94,10 @@ export const uploadLogo = (req: Request, res: Response): void => {
     const filePath = path.join(__dirname, '../../uploads', req.file.filename);
     const fileExists = fs.existsSync(filePath);
     console.log(`File exists at ${filePath}: ${fileExists}`);
+    
+    // Copy the file to the public directory for frontend access
+    const publicUrl = copyToPublic(req.file.filename);
+    console.log('Copied to public directory, accessible at:', publicUrl);
     
     res.status(200).json({ 
       message: 'File uploaded successfully',

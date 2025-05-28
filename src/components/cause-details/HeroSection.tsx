@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import { getImageUrl, handleImageError } from '@/utils/imageUtils';
 
 interface HeroSectionProps {
   title: string;
@@ -29,16 +30,39 @@ const HeroSection = ({
   currentAmount,
   hasSponsorship = false
 }: HeroSectionProps) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageSrc, setImageSrc] = useState(getImageUrl(heroImageUrl));
+
+  useEffect(() => {
+    // Preload the image to check if it loads correctly
+    const img = new Image();
+    img.src = getImageUrl(heroImageUrl);
+    img.onload = () => {
+      setImageLoaded(true);
+      setImageSrc(getImageUrl(heroImageUrl));
+    };
+    img.onerror = () => {
+      // Fall back to a default image if the provided URL fails to load
+      console.error(`Failed to load image: ${heroImageUrl}`);
+      setImageSrc(getImageUrl('/totebag.png'));
+      setImageLoaded(true);
+    };
+  }, [heroImageUrl]);
 
   return (
     <section className="relative min-h-[500px] flex items-center justify-center">
       <div 
         className="absolute inset-0 bg-cover bg-center z-0"
         style={{ 
-          backgroundImage: `url(${heroImageUrl})`,
-          filter: 'brightness(0.4)'
+          backgroundImage: `url(${imageSrc})`,
+          filter: 'brightness(0.4)',
+          opacity: imageLoaded ? 1 : 0,
+          transition: 'opacity 0.3s ease-in-out'
         }}
       />
+      {!imageLoaded && (
+        <div className="absolute inset-0 bg-gray-800 z-0" />
+      )}
       <div className="container mx-auto px-4 py-16 relative z-10 text-center text-white">
         <motion.h1 
           className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"

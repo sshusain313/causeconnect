@@ -22,7 +22,7 @@ const SponsorShowcase = ({ sponsors }: SponsorShowcaseProps) => {
           Our Amazing Sponsors
         </motion.h2>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
-          {sponsorships.map((sponsor, index) => (
+          {sponsors && sponsors.length > 0 ? sponsors.map((sponsor, index) => (
             <motion.div
               key={sponsor._id}
               className="flex flex-col items-center group cursor-pointer"
@@ -44,7 +44,11 @@ const SponsorShowcase = ({ sponsors }: SponsorShowcaseProps) => {
                 ${sponsor.amount.toLocaleString()}
               </p>
             </motion.div>
-          ))}
+          )) : (
+            <div className="col-span-full text-center py-8 text-gray-500">
+              No sponsors yet. Be the first to support this cause!
+            </div>
+          )}
         </div>
       </div>
     </section>
