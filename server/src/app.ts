@@ -24,7 +24,7 @@ app.use(cookieParser());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://causeconnect.netlify.app', 'https://www.causeconnect.netlify.app'] 
-    : ['http://localhost:8080', 'http://localhost:8081', 'http://localhost:8082', 'http://localhost:8083', 'http://localhost:3000'], // Allow development ports
+    : true, // Allow any origin in development mode
   credentials: true
 }));
 
