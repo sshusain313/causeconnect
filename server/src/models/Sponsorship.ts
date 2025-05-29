@@ -182,12 +182,11 @@ sponsorshipSchema.post('findOneAndUpdate', async function(doc) {
 });
 
 // Update cause's currentAmount after sponsorship is removed
-// Using findOneAndDelete instead of 'remove' which is deprecated
-sponsorshipSchema.post('findOneAndDelete', async function(doc) {
+sponsorshipSchema.post('remove', async function() {
   try {
-    if (doc && doc.cause) {
+    if (this.cause) {
       const Cause = mongoose.model('Cause');
-      await Cause.updateCauseAmount(doc.cause);
+      await Cause.updateCauseAmount(this.cause);
     }
   } catch (error) {
     console.error('Error updating cause amount after removal:', error);

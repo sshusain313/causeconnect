@@ -46,7 +46,8 @@ const userSchema = new Schema<IUser>({
   timestamps: true
 });
 
-// Index is already created by the 'unique: true' property in the email field
+// Create an index for faster queries
+userSchema.index({ email: 1 });
 
 const User = mongoose.models.User || mongoose.model<IUser>('User', userSchema);
 

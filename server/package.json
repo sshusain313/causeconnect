@@ -1,17 +1,16 @@
 {
-  "name": "causeconnect-server",
+  "name": "causebags-server",
   "version": "1.0.0",
-  "description": "Backend server for CauseConnect application",
+  "description": "Backend server for CauseBags application",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "seed": "ts-node src/scripts/seedAdmin.ts",
-    "postinstall": "npm run build"
+    "seed": "ts-node src/scripts/seedAdmin.ts"
   },
   "keywords": [
-    "causeconnect",
+    "causebags",
     "express",
     "mongodb",
     "typescript"

@@ -1,7 +1,6 @@
 
 import { Story } from '@/models/Story';
 import { Cause } from '@/types';
-import config from '../config';
 
 // Mock data for development - would be replaced with real API calls
 const mockStats = {
@@ -75,77 +74,48 @@ const mockCauses: Cause[] = [
   }
 ];
 
-// Real API calls using the config file for the API URL
+// In a real app, these would make actual API calls
 export const fetchStats = async () => {
-  try {
-    const response = await fetch(`${config.apiUrl}/stats`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch stats');
-    }
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching stats:', error);
-    // Fallback to mock data if API call fails
-    return mockStats;
-  }
+  // In a real app: const response = await fetch('/api/stats');
+  // return response.json();
+  return mockStats;
 };
 
 export const fetchStories = async (): Promise<Story[]> => {
-  try {
-    const response = await fetch(`${config.apiUrl}/stories`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch stories');
-    }
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching stories:', error);
-    // Fallback to mock data if API call fails
-    return mockStories;
-  }
+  // In a real app: const response = await fetch('/api/stories');
+  // return response.json();
+  return mockStories;
 };
 
 export const fetchCause = async (id: string): Promise<Cause> => {
-  try {
-    const response = await fetch(`${config.apiUrl}/causes/${id}`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch cause');
-    }
-    return await response.json();
-  } catch (error) {
-    console.error(`Error fetching cause ${id}:`, error);
-    // Fallback to mock data if API call fails
-    const cause = mockCauses.find(c => c._id === id);
-    if (!cause) {
-      throw new Error('Cause not found');
-    }
-    return cause;
+  // In a real app: const response = await fetch(`/api/causes/${id}`);
+  // return response.json();
+  
+  // For now, return mock data
+  const cause = mockCauses.find(c => c._id === id);
+  if (!cause) {
+    throw new Error('Cause not found');
   }
+  return cause;
 };
 
 export const submitStory = async (storyData: Omit<Story, 'id' | 'excerpt' | 'createdAt'>): Promise<Story> => {
-  try {
-    const response = await fetch(`${config.apiUrl}/stories`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(storyData)
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to submit story');
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error submitting story:', error);
-    // Fallback to mock implementation if API call fails
-    const newStory: Story = {
-      id: (mockStories.length + 1).toString(),
-      ...storyData,
-      excerpt: storyData.content.slice(0, 150) + '…',
-      createdAt: new Date()
-    };
-    
-    mockStories.push(newStory);
-    return newStory;
-  }
+  // In a real app, this would post to an API
+  // const response = await fetch('/api/stories', {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify(storyData)
+  // });
+  // return response.json();
+  
+  // For now, we'll create a mock response
+  const newStory: Story = {
+    id: (mockStories.length + 1).toString(),
+    ...storyData,
+    excerpt: storyData.content.slice(0, 150) + '…',
+    createdAt: new Date()
+  };
+  
+  mockStories.push(newStory);
+  return newStory;
 };

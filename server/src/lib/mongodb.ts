@@ -3,8 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Ensure MONGODB_URI is defined and is a string
-const MONGODB_URI = process.env.MONGODB_URI as string;
+const MONGODB_URI = process.env.MONGODB_URI;
 console.log('MongoDB URI:', MONGODB_URI ? 'URI is defined' : 'URI is missing');
 
 if (!MONGODB_URI) {
@@ -35,13 +34,13 @@ async function connectToDatabase() {
         console.log('Successfully connected to MongoDB');
         // Log the available collections
         if (mongoose.connection.db) {
-          mongoose.connection.db.listCollections().toArray()
-            .then((collections: any[]) => {
+          mongoose.connection.db.listCollections().toArray((err: Error | null, collections: any[]) => {
+            if (err) {
+              console.error('Error listing collections:', err);
+            } else {
               console.log('Available collections:', collections.map((c: any) => c.name));
-            })
-            .catch((error: Error) => {
-              console.error('Error listing collections:', error);
-            });
+            }
+          });
         }
         return mongoose;
       })
