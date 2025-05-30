@@ -23,9 +23,11 @@ app.use((express as any).urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://causeconnect.netlify.app', 'https://www.causeconnect.netlify.app'] 
+    ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://changebag.org', 'https://www.changebag.org'] 
     : true, // Allow any origin in development mode
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Configure Helmet for security headers with appropriate CSP - Updated for Render deployment
