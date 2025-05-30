@@ -1,15 +1,19 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import path from "path";
 import react from "@vitejs/plugin-react-swc";
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // Load env file based on `mode` in the current directory
+  const env = loadEnv(mode, process.cwd());
+  
+  return {
   server: {
     host: "::",
     port: 8085,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: env.VITE_API_URL || 'http://localhost:5000',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path,
@@ -41,6 +45,11 @@ export default defineConfig({
           vendor: ['react', 'react-dom', 'axios', '@tanstack/react-query'],
         }
       }
-    }
-  },
+    },
+    sourcemap: mode !== 'production',
+    minify: mode === 'production',
+    outDir: 'dist',
+    emptyOutDir: true
+  }
+  };
 });
