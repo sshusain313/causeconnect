@@ -1,6 +1,7 @@
 /**
  * Utility functions for handling image URLs
  */
+import config from '@/config';
 
 /**
  * Formats an image URL to ensure it can be properly displayed
@@ -14,20 +15,26 @@
 export const getImageUrl = (url: string | undefined, fallbackImage: string = '/totebag.png'): string => {
   if (!url) return fallbackImage;
   
+  // Log the original URL for debugging
+  console.log('Processing image URL:', url);
+  
   // If it's already an absolute URL (external), return as is
   if (url.startsWith('http://') || url.startsWith('https://')) {
+    // Special case: if it's from our domain but has the full URL, extract just the path
+    if (url.includes('changebag.org/uploads/') || url.includes('localhost:5000/uploads/')) {
+      const parts = url.split('/uploads/');
+      if (parts.length > 1) {
+        const filename = parts[1];
+        console.log('Extracted filename from full URL:', filename);
+        return `/uploads/${filename}`;
+      }
+    }
     return url;
   }
   
   // If it's a server upload path (starts with /uploads/), ensure it's properly formatted
-  // These images are now available in the public directory
   if (url.startsWith('/uploads/')) {
-    // Try to access the file directly from the public directory first
-    const filename = url.split('/').pop();
-    if (filename) {
-      // Use the local copy in the public directory
-      return `/uploads/${filename}`;
-    }
+    console.log('Server upload path detected');
     return url;
   }
   
