@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Upload, ZoomIn, ZoomOut, RotateCw, RotateCcw } from 'lucide-react';
 import config from '@/config';
+import axios from 'axios';
 
 interface LogoUploadStepProps {
   formData: {
@@ -93,8 +94,10 @@ const LogoUploadStep = ({ formData, updateFormData }: LogoUploadStepProps) => {
     const logoImg = new Image();
     // Handle server-side URLs
     if (previewUrl.startsWith('/uploads/')) {
-      logoImg.src = `${config.apiUrl.replace('/api', '')}${previewUrl}`;
-      console.log('Loading server image from:', `${config.apiUrl.replace('/api', '')}${previewUrl}`);
+      // Get the base domain without /api
+      const baseDomain = config.apiUrl.split('/api')[0];
+      logoImg.src = `${baseDomain}${previewUrl}`;
+      console.log('Loading server image from:', `${baseDomain}${previewUrl}`);
     } else {
       logoImg.src = previewUrl;
       console.log('Loading image from:', previewUrl);
@@ -188,35 +191,45 @@ const LogoUploadStep = ({ formData, updateFormData }: LogoUploadStepProps) => {
     setUploading(true);
 
     try {
-      // Create a FormData object to send the file
-      const formData = new FormData();
-      formData.append('logo', file);
+      // For development purposes, we'll use a local file reader approach
+      // since the server endpoint might not be available
       
-      // Upload the file to the server
-      const response = await fetch(`${config.apiUrl}/upload/logo`, {
-        method: 'POST',
-        body: formData
-      });
+      // Read the file as a data URL
+      const reader = new FileReader();
       
-      if (!response.ok) {
-        throw new Error('Failed to upload logo');
-      }
+      reader.onload = (event) => {
+        if (!event.target?.result) {
+          throw new Error('Failed to read file');
+        }
+        
+        // Use the data URL as the preview
+        const dataUrl = event.target.result as string;
+        console.log('Logo loaded as data URL');
+        
+        // Update the UI with the data URL
+        setPreviewUrl(dataUrl);
+        updateFormData({ logoUrl: dataUrl });
+        
+        // Reset position for new logo
+        const newPosition = { x: 200, y: 280, scale: 0.25, angle: 0 };
+        setPosition(newPosition);
+        updateFormData({ logoPosition: newPosition });
+        
+        setUploading(false);
+      };
       
-      const data = await response.json();
-      const serverImageUrl = data.url; // Get the URL from the server response
+      reader.onerror = () => {
+        console.error('Error reading file');
+        alert('Failed to read logo file. Please try again.');
+        setUploading(false);
+      };
       
-      // Update the UI with the server URL
-      setPreviewUrl(serverImageUrl);
-      updateFormData({ logoUrl: serverImageUrl });
+      // Start reading the file
+      reader.readAsDataURL(file);
       
-      // Reset position for new logo
-      const newPosition = { x: 200, y: 280, scale: 0.25, angle: 0 };
-      setPosition(newPosition);
-      updateFormData({ logoPosition: newPosition });
     } catch (error) {
-      console.error('Error uploading logo:', error);
-      alert('Failed to upload logo. Please try again.');
-    } finally {
+      console.error('Error handling logo:', error);
+      alert('Failed to process logo. Please try again.');
       setUploading(false);
     }
   };
