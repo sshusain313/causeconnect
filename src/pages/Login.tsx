@@ -44,7 +44,7 @@ const LoginPage = () => {
         } else if (result.role === 'claimer') {
           navigate('/dashboard/claimer');
         } else if (result.role === 'admin') {
-          navigate('/dashboard/admin');
+          navigate('/dashboard/admin/');
         } else {
           navigate('/');
         }

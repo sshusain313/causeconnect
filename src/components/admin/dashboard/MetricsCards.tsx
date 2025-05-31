@@ -1,14 +1,86 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   BarChart, 
   TrendingUp, 
   Clock,
-  AlertCircle
+  AlertCircle,
+  TrendingDown,
+  Loader2
 } from 'lucide-react';
+import { fetchDashboardMetrics } from '@/services/apiServices';
+import { formatCurrency } from '@/utils/formatters';
+
+interface DashboardMetrics {
+  totalCauses: number;
+  totalSponsors: number;
+  totalRaised: number;
+  pendingItems: number;
+  weeklyStats: {
+    causesChange: number;
+    sponsorsChange: number;
+    raisedChange: number;
+    urgentPendingItems: number;
+  };
+}
 
 const MetricsCards = () => {
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadMetrics = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchDashboardMetrics();
+        setMetrics(data);
+        setError(null);
+      } catch (err) {
+        setError('Failed to load dashboard metrics');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMetrics();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {[...Array(4)].map((_, index) => (
+          <Card key={index} className="min-h-[120px] flex items-center justify-center">
+            <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (error || !metrics) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {[...Array(4)].map((_, index) => (
+          <Card key={index} className="min-h-[120px]">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-500">
+                Error Loading Data
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm text-red-500">
+                {error || 'Could not load metrics'}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <Card>
@@ -19,13 +91,24 @@ const MetricsCards = () => {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
-            <div className="text-3xl font-bold">6</div>
+            <div className="text-3xl font-bold">{metrics.totalCauses}</div>
             <BarChart className="h-5 w-5 text-gray-400" />
           </div>
-          <div className="text-xs text-green-600 mt-1 flex items-center">
-            <TrendingUp className="h-3 w-3 mr-1" />
-            <span>+2 this week</span>
-          </div>
+          {metrics.weeklyStats.causesChange > 0 ? (
+            <div className="text-xs text-green-600 mt-1 flex items-center">
+              <TrendingUp className="h-3 w-3 mr-1" />
+              <span>+{metrics.weeklyStats.causesChange} this week</span>
+            </div>
+          ) : metrics.weeklyStats.causesChange < 0 ? (
+            <div className="text-xs text-red-600 mt-1 flex items-center">
+              <TrendingDown className="h-3 w-3 mr-1" />
+              <span>{metrics.weeklyStats.causesChange} this week</span>
+            </div>
+          ) : (
+            <div className="text-xs text-gray-500 mt-1">
+              No change this week
+            </div>
+          )}
         </CardContent>
       </Card>
       
@@ -37,12 +120,24 @@ const MetricsCards = () => {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
-            <div className="text-3xl font-bold">2</div>
+            <div className="text-3xl font-bold">{metrics.totalSponsors}</div>
             <BarChart className="h-5 w-5 text-gray-400" />
           </div>
-          <div className="text-xs text-gray-500 mt-1">
-            No change this week
-          </div>
+          {metrics.weeklyStats.sponsorsChange > 0 ? (
+            <div className="text-xs text-green-600 mt-1 flex items-center">
+              <TrendingUp className="h-3 w-3 mr-1" />
+              <span>+{metrics.weeklyStats.sponsorsChange} this week</span>
+            </div>
+          ) : metrics.weeklyStats.sponsorsChange < 0 ? (
+            <div className="text-xs text-red-600 mt-1 flex items-center">
+              <TrendingDown className="h-3 w-3 mr-1" />
+              <span>{metrics.weeklyStats.sponsorsChange} this week</span>
+            </div>
+          ) : (
+            <div className="text-xs text-gray-500 mt-1">
+              No change this week
+            </div>
+          )}
         </CardContent>
       </Card>
       
@@ -54,13 +149,24 @@ const MetricsCards = () => {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
-            <div className="text-3xl font-bold">$14,500</div>
+            <div className="text-3xl font-bold">{formatCurrency(metrics.totalRaised)}</div>
             <TrendingUp className="h-5 w-5 text-green-500" />
           </div>
-          <div className="text-xs text-green-600 mt-1 flex items-center">
-            <TrendingUp className="h-3 w-3 mr-1" />
-            <span>+$3,500 this week</span>
-          </div>
+          {metrics.weeklyStats.raisedChange > 0 ? (
+            <div className="text-xs text-green-600 mt-1 flex items-center">
+              <TrendingUp className="h-3 w-3 mr-1" />
+              <span>+{formatCurrency(metrics.weeklyStats.raisedChange)} this week</span>
+            </div>
+          ) : metrics.weeklyStats.raisedChange < 0 ? (
+            <div className="text-xs text-red-600 mt-1 flex items-center">
+              <TrendingDown className="h-3 w-3 mr-1" />
+              <span>{formatCurrency(metrics.weeklyStats.raisedChange)} this week</span>
+            </div>
+          ) : (
+            <div className="text-xs text-gray-500 mt-1">
+              No change this week
+            </div>
+          )}
         </CardContent>
       </Card>
       
@@ -72,13 +178,15 @@ const MetricsCards = () => {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between">
-            <div className="text-3xl font-bold">6</div>
+            <div className="text-3xl font-bold">{metrics.pendingItems}</div>
             <Clock className="h-5 w-5 text-amber-500" />
           </div>
-          <div className="text-xs text-amber-600 mt-1 flex items-center">
-            <AlertCircle className="h-3 w-3 mr-1" />
-            <span>3 require immediate review</span>
-          </div>
+          {metrics.weeklyStats.urgentPendingItems > 0 && (
+            <div className="text-xs text-amber-600 mt-1 flex items-center">
+              <AlertCircle className="h-3 w-3 mr-1" />
+              <span>{metrics.weeklyStats.urgentPendingItems} require immediate review</span>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

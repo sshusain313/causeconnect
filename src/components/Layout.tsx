@@ -39,7 +39,7 @@ const Layout = ({ children }: LayoutProps) => {
             <Link to="/create-cause" className={`${isActive('/create-cause')} px-2 py-4`}>Create a Cause</Link>
             {/* <Link to="/sponsor/new" className={`${isActive('/sponsor/new')} px-2 py-4`}>Sponsor</Link> */}
             <Link to="/why-sponsor" className={`${isActive('/why-sponsor')} px-2 py-4 text-green-500 text-underline`}>Why Sponsor?</Link>
-            <Link to="/why-claim" className={`${isActive('/why-claim')} px-2 py-4`}>Why Claim?</Link>
+            <Link to="/why-claim" className={`${isActive('/why-claim')} px-2 py-4  text-green-500 text-underline`}>Why Claim?</Link>
           </nav>
 
           <div className="flex items-center space-x-4">

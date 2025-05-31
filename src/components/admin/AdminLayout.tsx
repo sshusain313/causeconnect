@@ -30,6 +30,15 @@ import {
   LogOut
 } from 'lucide-react';
 import { Spinner } from '@/components/ui/spinner';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Link, useLocation } from 'react-router-dom';
+import Layout from '../Layout';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -40,7 +49,12 @@ interface AdminLayoutProps {
 
 const AdminLayout = ({ children, title, subtitle, loading = false }: AdminLayoutProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
+
+  const isActive = (path: string) => {
+    return location.pathname === path ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-600 hover:text-primary-600';
+  };
 
   const handleLogout = () => {
     logout();
@@ -64,6 +78,7 @@ const AdminLayout = ({ children, title, subtitle, loading = false }: AdminLayout
   ];
 
   return (
+
     <SidebarProvider defaultOpen={true}>
       <div className="flex h-screen w-full overflow-hidden">
         <Sidebar>
@@ -107,7 +122,9 @@ const AdminLayout = ({ children, title, subtitle, loading = false }: AdminLayout
           </SidebarFooter>
         </Sidebar>
         
-        <SidebarInset className="flex flex-col overflow-auto">
+      <SidebarInset className="flex flex-col overflow-auto">
+      
+      
           <header className="sticky top-0 z-10 bg-background border-b p-4 flex justify-between items-center">
             <div>
               <div className="flex items-center gap-4">
@@ -135,9 +152,11 @@ const AdminLayout = ({ children, title, subtitle, loading = false }: AdminLayout
               children
             )}
           </main>
+          
         </SidebarInset>
       </div>
     </SidebarProvider>
+    
   );
 };
 

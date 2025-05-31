@@ -528,6 +528,12 @@ const WhySponsor = () => {
                               src={story.imageUrl} 
                               alt={story.title} 
                               className="h-full w-full object-cover transition-all hover:scale-105"
+                              onError={(e) => {
+                                // Fallback if image fails to load
+                                const target = e.target as HTMLImageElement;
+                                console.error(`Failed to load image: ${target.src}`);
+                                target.src = 'https://placehold.co/600x400?text=Story+Image';
+                              }}
                             />
                           </div>
                         )}
