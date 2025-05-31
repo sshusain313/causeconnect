@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Upload, ZoomIn, ZoomOut, RotateCw, RotateCcw } from 'lucide-react';
+import config from '@/config';
 
 interface LogoUploadStepProps {
   formData: {
@@ -92,8 +93,8 @@ const LogoUploadStep = ({ formData, updateFormData }: LogoUploadStepProps) => {
     const logoImg = new Image();
     // Handle server-side URLs
     if (previewUrl.startsWith('/uploads/')) {
-      logoImg.src = `http://localhost:5000${previewUrl}`;
-      console.log('Loading server image from:', `http://localhost:5000${previewUrl}`);
+      logoImg.src = `${config.apiUrl.replace('/api', '')}${previewUrl}`;
+      console.log('Loading server image from:', `${config.apiUrl.replace('/api', '')}${previewUrl}`);
     } else {
       logoImg.src = previewUrl;
       console.log('Loading image from:', previewUrl);
@@ -192,7 +193,7 @@ const LogoUploadStep = ({ formData, updateFormData }: LogoUploadStepProps) => {
       formData.append('logo', file);
       
       // Upload the file to the server
-      const response = await fetch('/api/upload/logo', {
+      const response = await fetch(`${config.apiUrl}/upload/logo`, {
         method: 'POST',
         body: formData
       });
