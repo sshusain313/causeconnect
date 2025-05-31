@@ -17,8 +17,8 @@ const isProduction = import.meta.env.PROD || window.location.hostname === 'chang
 const apiDomain = isProduction ? 'https://changebag.org' : 'http://localhost:5000';
 
 const config: Config = {
-  // Always use the full URL to ensure it works everywhere
-  apiUrl: `${apiDomain}/api/causes`,
+  // Always use the base API URL without specific endpoints
+  apiUrl: `${apiDomain}/api`,
   uploadsUrl: `${apiDomain}/uploads`,
   isProduction
 };
