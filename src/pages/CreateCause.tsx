@@ -13,6 +13,7 @@ import { Heart, Users, Target, Globe, Calendar, Tag, MapPin } from 'lucide-react
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import axios from 'axios';
+import config from '@/config';
 
 const CreateCause = () => {
   const navigate = useNavigate();
@@ -103,7 +104,7 @@ const CreateCause = () => {
       
       try {
         // Use a direct fetch call with FormData for file upload
-        const fetchResponse = await fetch('http://localhost:5000/api/causes', {
+        const fetchResponse = await fetch(`${config.apiUrl}/causes`, {
           method: 'POST',
           headers: {
             'Authorization': token ? `Bearer ${token}` : ''
