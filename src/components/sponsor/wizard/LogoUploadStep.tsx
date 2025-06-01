@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -8,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Upload, ZoomIn, ZoomOut, RotateCw, RotateCcw } from 'lucide-react';
 import config from '@/config';
 import axios from 'axios';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface LogoUploadStepProps {
   formData: {
@@ -39,7 +39,8 @@ const LogoUploadStep = ({ formData, updateFormData }: LogoUploadStepProps) => {
   const logoRef = useRef<HTMLImageElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState(formData.logoPosition || { x: 200, y: 200, scale: 0.25, angle: 0 });
-  
+  const [error, setError] = useState<string | null>(null);
+
   // Initialize canvas and draw tote bag with logo
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -206,16 +207,26 @@ const LogoUploadStep = ({ formData, updateFormData }: LogoUploadStepProps) => {
         const dataUrl = event.target.result as string;
         console.log('Logo loaded as data URL');
         
-        // Update the UI with the data URL
-        setPreviewUrl(dataUrl);
-        updateFormData({ logoUrl: dataUrl });
-        
-        // Reset position for new logo
-        const newPosition = { x: 200, y: 280, scale: 0.25, angle: 0 };
-        setPosition(newPosition);
-        updateFormData({ logoPosition: newPosition });
-        
-        setUploading(false);
+        // Compress the image before saving to form data
+        compressImage(dataUrl, file.type, 800, 0.7).then(compressedDataUrl => {
+          console.log('Original size:', Math.round(dataUrl.length / 1024), 'KB');
+          console.log('Compressed size:', Math.round(compressedDataUrl.length / 1024), 'KB');
+          
+          // Update the UI with the compressed data URL
+          setPreviewUrl(compressedDataUrl);
+          updateFormData({ logoUrl: compressedDataUrl });
+          
+          // Reset position for new logo
+          const newPosition = { x: 200, y: 280, scale: 0.25, angle: 0 };
+          setPosition(newPosition);
+          updateFormData({ logoPosition: newPosition });
+          
+          setUploading(false);
+        }).catch(error => {
+          console.error('Error compressing image:', error);
+          setError('Failed to process image. Please try a smaller file.');
+          setUploading(false);
+        });
       };
       
       reader.onerror = () => {
@@ -232,6 +243,46 @@ const LogoUploadStep = ({ formData, updateFormData }: LogoUploadStepProps) => {
       alert('Failed to process logo. Please try again.');
       setUploading(false);
     }
+  };
+
+  // Image compression function
+  const compressImage = (dataUrl: string, fileType: string, maxWidth: number, quality: number): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        // Calculate new dimensions while maintaining aspect ratio
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+        
+        // Create canvas and draw image
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Could not get canvas context'));
+          return;
+        }
+        
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Convert to compressed data URL
+        const compressedDataUrl = canvas.toDataURL(fileType, quality);
+        resolve(compressedDataUrl);
+      };
+      
+      img.onerror = () => {
+        reject(new Error('Failed to load image for compression'));
+      };
+      
+      img.src = dataUrl;
+    });
   };
 
   // Handle message change
@@ -280,6 +331,11 @@ const LogoUploadStep = ({ formData, updateFormData }: LogoUploadStepProps) => {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       <h2 className="text-xl font-bold mb-4">Logo Upload</h2>
       <p className="text-gray-600 mb-6">
         Upload your organization's logo to be displayed on the cause page and tote bags.

@@ -27,8 +27,11 @@ const SponsorFormContainer: React.FC<SponsorFormContainerProps> = ({ causeId }) 
       console.log('Complete form data:', formData);
       
       // Send data to the server using the correct API URL
-      // Note: config.apiUrl already includes /api, so we don't need to add it again
-      const response = await axios.post(`${config.apiUrl.replace('/api', '')}/sponsorships`, {
+      // Use the base domain directly to avoid URL formation issues
+      const apiEndpoint = config.isProduction ? 'https://api.changebag.org/sponsorships' : 'http://localhost:5000/sponsorships';
+      console.log('Sending sponsorship to endpoint:', apiEndpoint);
+      
+      const response = await axios.post(apiEndpoint, {
         ...formData,
         cause: causeId
       });
