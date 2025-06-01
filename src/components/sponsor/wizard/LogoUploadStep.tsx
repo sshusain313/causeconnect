@@ -94,8 +94,8 @@ const LogoUploadStep = ({ formData, updateFormData }: LogoUploadStepProps) => {
     const logoImg = new Image();
     // Handle server-side URLs
     if (previewUrl.startsWith('/uploads/')) {
-      // Get the base domain without /api
-      const baseDomain = config.apiUrl.split('/api')[0];
+      // For uploads, we need to use the main domain, not the API subdomain
+      const baseDomain = config.isProduction ? 'https://changebag.org' : config.apiUrl.split('/api')[0];
       logoImg.src = `${baseDomain}${previewUrl}`;
       console.log('Loading server image from:', `${baseDomain}${previewUrl}`);
     } else {
