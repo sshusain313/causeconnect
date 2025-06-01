@@ -10,11 +10,18 @@ export enum SponsorshipStatus {
   FAILED = 'failed'
 }
 
+export enum DistributionType {
+  ONLINE = 'online',
+  PHYSICAL = 'physical'
+}
+
 export interface IDistributionPoint {
   name: string;
   address: string;
   contactPerson: string;
   phone: string;
+  location?: string;
+  totesCount?: number;
 }
 
 export interface IDemographics {
@@ -34,7 +41,9 @@ export interface ISponsorship extends Document {
   unitPrice: number;
   totalAmount: number;
   logoUrl: string;
+  mockupUrl?: string;
   message: string;
+  distributionType: DistributionType;
   distributionPoints: IDistributionPoint[];
   distributionStartDate: Date;
   distributionEndDate: Date;
@@ -93,15 +102,26 @@ const sponsorshipSchema = new Schema<ISponsorship>(
       type: String,
       required: true
     },
+    mockupUrl: {
+      type: String,
+      required: false
+    },
     message: {
       type: String,
       default: ''
+    },
+    distributionType: {
+      type: String,
+      enum: Object.values(DistributionType),
+      default: DistributionType.ONLINE
     },
     distributionPoints: [{
       name: String,
       address: String,
       contactPerson: String,
-      phone: String
+      phone: String,
+      location: String,
+      totesCount: Number
     }],
     distributionStartDate: {
       type: Date,
