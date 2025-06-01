@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { Eye, EyeOff, PlusCircle, Search, ArrowUpDown, Download } from 'lucide-react';
-import config from '@/config';
 
 // Interface for Cause data
 interface Cause {
@@ -44,7 +43,7 @@ const CausesManagement = () => {
     const fetchCauses = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${config.apiUrl}/causes`, {
+        const response = await fetch('http://localhost:5000/api/causes', {
           headers: {
             'Content-Type': 'application/json',
             // Add authorization header if needed
@@ -97,7 +96,7 @@ const CausesManagement = () => {
       }));
       
       // Send update to the server using the new toggle-online endpoint
-      const response = await fetch(`${config.apiUrl}/causes/${causeId}/toggle-online`, {
+      const response = await fetch(`http://localhost:5000/api/causes/${causeId}/toggle-online`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -137,7 +136,7 @@ const CausesManagement = () => {
       });
       
       // Revert the optimistic update
-      const response = await fetch(`${config.apiUrl}/causes`);
+      const response = await fetch('http://localhost:5000/api/causes');
       if (response.ok) {
         const data = await response.json();
         setCauses(data.map((cause: Cause) => ({

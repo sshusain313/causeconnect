@@ -8,7 +8,6 @@ import axios from 'axios';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import config from '@/config';
 import {
   Form,
   FormControl,
@@ -393,7 +392,7 @@ const ClaimFormPage = () => {
                   <div className="flex items-center space-x-4">
                     <div className="w-16 h-16 rounded-md overflow-hidden">
                       <img 
-                        src={cause.imageUrl.startsWith('http') ? cause.imageUrl : `${config.uploadsUrl.replace('/uploads', '')}${cause.imageUrl}`} 
+                        src={cause.imageUrl.startsWith('http') ? cause.imageUrl : `http://localhost:5000${cause.imageUrl}`} 
                         alt={cause.title} 
                         className="w-full h-full object-cover" 
                       />

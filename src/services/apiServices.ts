@@ -128,35 +128,17 @@ export const fetchDashboardMetrics = async () => {
       throw new Error('Failed to fetch causes data');
     }
     
-    let allCauses;
-    try {
-      allCauses = await allCausesResponse.json();
-      
-      // Check if we got an array of causes
-      if (!Array.isArray(allCauses)) {
-        // If we got an object with a data property that's an array, use that
-        if (allCauses && typeof allCauses === 'object' && Array.isArray(allCauses.data)) {
-          allCauses = allCauses.data;
-        } else {
-          console.error('API response is not an array:', allCauses);
-          throw new Error('Invalid causes data format');
-        }
-      }
-      
-      if (allCauses.length === 0) {
-        console.warn('No causes data available');
-      }
-    } catch (parseError) {
-      console.error('Error parsing causes response:', parseError);
-      throw new Error('Failed to parse causes data');
+    const allCauses = await allCausesResponse.json();
+    
+    if (!Array.isArray(allCauses) || allCauses.length === 0) {
+      throw new Error('No causes data available');
     }
     
     console.log('Successfully fetched', allCauses.length, 'causes');
     
     // Calculate metrics from real data
-    // Ensure we have an array before filtering
-    const approvedCauses = Array.isArray(allCauses) ? allCauses.filter(cause => cause && cause.status === 'approved') : [];
-    const pendingCauses = Array.isArray(allCauses) ? allCauses.filter(cause => cause && cause.status === 'pending') : [];
+    const approvedCauses = allCauses.filter(cause => cause.status === 'approved');
+    const pendingCauses = allCauses.filter(cause => cause.status === 'pending');
     
     // Extract all unique sponsors from all causes
     const allSponsors = new Set();
@@ -197,11 +179,10 @@ export const fetchDashboardMetrics = async () => {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     
-    const causesThisWeek = Array.isArray(allCauses) ? allCauses.filter(cause => {
-      if (!cause || !cause.createdAt) return false;
+    const causesThisWeek = allCauses.filter(cause => {
       const createdAt = new Date(cause.createdAt);
       return !isNaN(createdAt.getTime()) && createdAt >= oneWeekAgo;
-    }).length : 0;
+    }).length;
     
     // For sponsors this week, use mock data
     const sponsorsThisWeek = mockSponsorsData.filter(sponsor => {
@@ -247,30 +228,8 @@ export const fetchDashboardMetrics = async () => {
       const approvedResponse = await fetch(`${config.apiUrl}/causes?status=approved`);
       const pendingResponse = await fetch(`${config.apiUrl}/causes?status=pending`);
       
-      let approvedCauses = [];
-      let pendingCauses = [];
-      
-      if (approvedResponse.ok) {
-        try {
-          const approvedData = await approvedResponse.json();
-          approvedCauses = Array.isArray(approvedData) ? approvedData : 
-                          (approvedData && typeof approvedData === 'object' && Array.isArray(approvedData.data)) ? 
-                          approvedData.data : [];
-        } catch (e) {
-          console.error('Error parsing approved causes:', e);
-        }
-      }
-      
-      if (pendingResponse.ok) {
-        try {
-          const pendingData = await pendingResponse.json();
-          pendingCauses = Array.isArray(pendingData) ? pendingData : 
-                         (pendingData && typeof pendingData === 'object' && Array.isArray(pendingData.data)) ? 
-                         pendingData.data : [];
-        } catch (e) {
-          console.error('Error parsing pending causes:', e);
-        }
-      }
+      const approvedCauses = approvedResponse.ok ? await approvedResponse.json() : [];
+      const pendingCauses = pendingResponse.ok ? await pendingResponse.json() : [];
       
       // Basic calculations from whatever data we could get
       const totalCauses = Array.isArray(approvedCauses) ? approvedCauses.length : 0;

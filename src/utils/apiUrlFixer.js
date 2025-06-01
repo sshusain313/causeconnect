@@ -2,11 +2,9 @@
  * API URL Fixer
  * 
  * This module fixes any hardcoded references to localhost:5000 in the application
- * by intercepting network requests and redirecting them to use config.apiUrl.
+ * by intercepting network requests and redirecting them to the current domain.
  * 
  * It's loaded before the application starts to ensure all API requests are properly handled.
- * 
- * NOTE: This is a fallback mechanism. All code should be updated to use config.apiUrl directly.
  */
 
 // Self-executing function to avoid polluting the global scope
@@ -31,48 +29,12 @@
   const originalFetch = window.fetch;
   const originalXhrOpen = XMLHttpRequest.prototype.open;
   
-  // Import config if it exists in window
-  const getConfig = () => {
-    if (window.config && window.config.apiUrl) {
-      return window.config;
-    }
-    // Fallback values if config is not available
-    return {
-      apiUrl: window.location.origin + '/api',
-      uploadsUrl: window.location.origin + '/uploads'
-    };
-  };
-
-  // Function to replace localhost URLs with the correct domain from config
+  // Function to replace localhost URLs with the current domain
   const fixUrl = (url) => {
     if (typeof url === 'string' && url.includes('localhost:5000')) {
-      const config = getConfig();
-      // Handle API URLs
-      if (url.includes('/api/')) {
-        const baseApiUrl = config.apiUrl.endsWith('/api') 
-          ? config.apiUrl 
-          : config.apiUrl + '/api';
-        const apiPath = url.split('/api/')[1];
-        const newUrl = `${baseApiUrl}/${apiPath}`;
-        console.log(`API URL Fixer: Redirecting API ${url} to ${newUrl}`);
-        return newUrl;
-      }
-      // Handle uploads URLs
-      else if (url.includes('/uploads/')) {
-        const baseUploadsUrl = config.uploadsUrl.endsWith('/uploads') 
-          ? config.uploadsUrl 
-          : config.uploadsUrl + '/uploads';
-        const uploadsPath = url.split('/uploads/')[1];
-        const newUrl = `${baseUploadsUrl}/${uploadsPath}`;
-        console.log(`API URL Fixer: Redirecting uploads ${url} to ${newUrl}`);
-        return newUrl;
-      }
-      // Generic fallback
-      else {
-        const newUrl = url.replace('http://localhost:5000', window.location.origin);
-        console.log(`API URL Fixer: Redirecting ${url} to ${newUrl}`);
-        return newUrl;
-      }
+      const newUrl = url.replace('http://localhost:5000', window.location.origin);
+      console.log(`API URL Fixer: Redirecting ${url} to ${newUrl}`);
+      return newUrl;
     }
     return url;
   };

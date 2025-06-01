@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -6,7 +7,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import Layout from '@/components/Layout';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2, Share2 } from 'lucide-react';
-import config from '@/config';
 
 // Import all cause-details components
 import HeroSection from '@/components/cause-details/HeroSection';
@@ -41,7 +41,7 @@ const CauseDetailsPage = () => {
     queryFn: async () => {
       try {
         // In a real app, this would fetch from the actual API endpoint
-        const response = await fetch(`${config.apiUrl}/causes/${id}`);
+        const response = await fetch(`http://localhost:5000/api/causes/${id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch cause details');
         }
@@ -154,7 +154,7 @@ const CauseDetailsPage = () => {
         <HeroSection 
           title={cause.title}
           tagline={cause.description}
-          heroImageUrl={cause.imageUrl.startsWith('http') ? cause.imageUrl : `${config.uploadsUrl}${cause.imageUrl.replace('/uploads', '')}`}
+          heroImageUrl={cause.imageUrl.startsWith('http') ? cause.imageUrl : `http://localhost:5000${cause.imageUrl}`}
           onAction={handleAction}
           onSponsor={handleSponsor}
           onShare={handleShare}
@@ -203,7 +203,7 @@ const CauseDetailsPage = () => {
                   <CauseImageAndStory 
                     title={cause.title}
                     story={cause.story}
-                    imageUrl={cause.imageUrl.startsWith('http') ? cause.imageUrl : `${config.uploadsUrl}${cause.imageUrl.replace('/uploads', '')}`}
+                    imageUrl={cause.imageUrl.startsWith('http') ? cause.imageUrl : `http://localhost:5000${cause.imageUrl}`}
                   />
                 </CardContent>
               </Card> */}
@@ -219,7 +219,7 @@ const CauseDetailsPage = () => {
               {/* Why It Matters */}
               {/* <WhyItMatters 
                 microStoryText={cause.whyItMatters || cause.story || ''}
-                microStoryImageUrl={cause.imageUrl.startsWith('http') ? cause.imageUrl : `${config.uploadsUrl}${cause.imageUrl.replace('/uploads', '')}`}
+                microStoryImageUrl={cause.imageUrl.startsWith('http') ? cause.imageUrl : `http://localhost:5000${cause.imageUrl}`}
               /> */}
 
               {/* FAQ Accordion */}

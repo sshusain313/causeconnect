@@ -106,30 +106,6 @@ causeSchema.virtual('totalTotes').get(function() {
   return Math.floor(this.currentAmount / totePrice);
 });
 
-// Virtual field for claimed totes
-causeSchema.virtual('claimedTotes').get(async function() {
-  try {
-    // This requires mongoose.Query.prototype.exec() to be awaited
-    const Claim = mongoose.model('Claim');
-    const claimCount = await Claim.countDocuments({
-      causeId: this._id,
-      status: { $nin: ['rejected', 'cancelled'] }
-    });
-    return claimCount;
-  } catch (error) {
-    console.error('Error calculating claimed totes:', error);
-    return 0;
-  }
-});
-
-// Virtual field for available totes
-causeSchema.virtual('availableTotes').get(function() {
-  // Calculate available totes as total totes minus claimed totes
-  // If claimedTotes is not available yet (async), default to totalTotes
-  const claimed = this.claimedTotes || 0;
-  return Math.max(0, this.totalTotes - claimed);
-});
-
 // Create indexes for better query performance
 causeSchema.index({ status: 1 });
 causeSchema.index({ category: 1 });

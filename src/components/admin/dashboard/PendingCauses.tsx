@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { Eye, XCircle, Loader2 } from 'lucide-react';
 import axios from 'axios';
-import config from '@/config';
 
 interface PendingCause {
   _id: string;
@@ -55,7 +54,7 @@ const PendingCauses: React.FC<PendingCausesProps> = ({ pendingCauses, loading = 
       }
       
       // Call API to update cause status to approved
-      await axios.patch(`${config.apiUrl}/causes/${causeId}/status`, {
+      await axios.patch(`http://localhost:5000/api/causes/${causeId}/status`, {
         status: 'approved'
       }, {
         headers: {
@@ -101,7 +100,7 @@ const PendingCauses: React.FC<PendingCausesProps> = ({ pendingCauses, loading = 
       }
       
       // Call API to update cause status to rejected
-      await axios.patch(`${config.apiUrl}/causes/${causeId}/status`, {
+      await axios.patch(`http://localhost:5000/api/causes/${causeId}/status`, {
         status: 'rejected'
       }, {
         headers: {

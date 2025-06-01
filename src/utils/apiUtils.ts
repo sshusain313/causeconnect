@@ -3,10 +3,9 @@
  */
 import config from '../config';
 
-// Use config values for API domain to ensure consistency
-const API_DOMAIN = config.apiUrl.endsWith('/api') 
-  ? config.apiUrl.slice(0, -4) // Remove trailing /api if it exists
-  : config.apiUrl;
+// Determine the base domain for API requests
+const isProduction = config.isProduction;
+const API_DOMAIN = isProduction ? 'https://changebag.org' : 'http://localhost:5000';
 
 /**
  * Constructs a full API URL based on the current environment
@@ -17,13 +16,8 @@ export const getApiUrl = (endpoint: string): string => {
   // Make sure endpoint starts with /
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   
-  // Get the base API URL without the trailing /api if it exists
-  const baseUrl = config.apiUrl.endsWith('/api') 
-    ? config.apiUrl.slice(0, -4) // Remove trailing /api
-    : config.apiUrl;
-  
   // Always use the full URL to ensure it works everywhere
-  return `${baseUrl}/api${normalizedEndpoint}`;
+  return `${API_DOMAIN}/api${normalizedEndpoint}`;
 };
 
 /**

@@ -5,7 +5,6 @@ import { Check } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
-import config from '@/config';
 
 interface ConfirmationStepProps {
   formData: {
@@ -217,7 +216,7 @@ const ConfirmationStep = ({ formData }: ConfirmationStepProps) => {
                 <div className="bg-gray-50 p-4 rounded-lg flex justify-center">
                   <img 
                     src={formData.logoUrl.startsWith('/uploads/') 
-                      ? `${config.uploadsUrl.replace('/uploads', '')}${formData.logoUrl}` 
+                      ? `http://localhost:5000${formData.logoUrl}` 
                       : formData.logoUrl} 
                     alt="Organization Logo" 
                     className="max-h-32 max-w-full object-contain" 

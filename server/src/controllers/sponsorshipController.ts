@@ -45,12 +45,6 @@ export const approveSponsorship = async (req: Request, res: Response): Promise<v
     sponsorship.approvedAt = new Date();
     await sponsorship.save();
 
-    // Import Cause model and update the cause's funding amount
-    const Cause = require('../models/Cause').default;
-    await Cause.updateCauseAmount(sponsorship.cause);
-    
-    console.log(`Updated cause ${sponsorship.cause} funding after approving sponsorship ${sponsorship._id}`);
-
     res.json(sponsorship);
   } catch (error) {
     console.error('Error approving sponsorship:', error);
