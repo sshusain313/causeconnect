@@ -5,6 +5,7 @@ import { useToast } from '@/components/ui/use-toast';
 import OnboardingWizard from './OnboardingWizard';
 import SponsorBenefits from './SponsorBenefits';
 import axios from 'axios';
+import config from '@/config';
 
 interface SponsorFormContainerProps {
   causeId: string | null;
@@ -25,8 +26,8 @@ const SponsorFormContainer: React.FC<SponsorFormContainerProps> = ({ causeId }) 
       console.log('Total amount:', formData.totalAmount);
       console.log('Complete form data:', formData);
       
-      // Send data to the server using a relative URL
-      const response = await axios.post('/api/sponsorships', {
+      // Send data to the server using the config API URL
+      const response = await axios.post(`${config.apiUrl}/sponsorships`, {
         ...formData,
         cause: causeId
       });
