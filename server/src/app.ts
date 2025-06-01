@@ -26,7 +26,7 @@ app.use(cors({
     ? process.env.ALLOWED_ORIGINS?.split(',') || ['https://changebag.org', 'https://www.changebag.org'] 
     : true, // Allow any origin in development mode
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
