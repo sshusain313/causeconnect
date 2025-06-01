@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/form';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
+import config from '@/config';
 import { Loader2 } from 'lucide-react';
 
 const claimFormSchema = z.object({
@@ -392,7 +393,7 @@ const ClaimFormPage = () => {
                   <div className="flex items-center space-x-4">
                     <div className="w-16 h-16 rounded-md overflow-hidden">
                       <img 
-                        src={cause.imageUrl.startsWith('http') ? cause.imageUrl : `http://localhost:5000${cause.imageUrl}`} 
+                        src={cause.imageUrl.startsWith('http') ? cause.imageUrl : `${config.uploadsUrl}${cause.imageUrl.replace('/uploads', '')}`} 
                         alt={cause.title} 
                         className="w-full h-full object-cover" 
                       />

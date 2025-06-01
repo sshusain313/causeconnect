@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { Eye, EyeOff, PlusCircle, Search, ArrowUpDown, Download } from 'lucide-react';
+import config from '@/config';
 
 // Interface for Cause data
 interface Cause {
@@ -43,27 +44,24 @@ const CausesManagement = () => {
     const fetchCauses = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:5000/api/causes', {
+        const response = await fetch(`${config.apiUrl}/causes`, {
           headers: {
             'Content-Type': 'application/json',
-            // Add authorization header if needed
-            // 'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to fetch causes: ${response.statusText}`);
+          throw new Error('Failed to fetch causes');
         }
 
         const data = await response.json();
-        
-        // Add isOnline property to each cause based on status
-        const processedData = data.map((cause: Cause) => ({
+        // Set isOnline property based on status for each cause
+        const causesWithOnlineStatus = data.map((cause: Cause) => ({
           ...cause,
-          isOnline: cause.status !== 'draft' && cause.status !== 'rejected'
+          isOnline: cause.status === 'approved' || cause.status === 'completed'
         }));
-        
-        setCauses(processedData);
+        setCauses(causesWithOnlineStatus);
       } catch (err) {
         console.error('Error fetching causes:', err);
         setError('Failed to load causes. Please try again later.');
@@ -95,15 +93,16 @@ const CausesManagement = () => {
         return c;
       }));
       
-      // Send update to the server using the new toggle-online endpoint
-      const response = await fetch(`http://localhost:5000/api/causes/${causeId}/toggle-online`, {
+      // Send update to the server using the status endpoint
+      const response = await fetch(`${config.apiUrl}/causes/${causeId}/status`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json'
-          // Authentication removed for development
-          // In production, add this back:
-          // 'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // Add authentication token
+        },
+        body: JSON.stringify({
+          status: newOnlineStatus ? 'approved' : 'pending'
+        })
       });
       
       if (!response.ok) {
@@ -117,7 +116,12 @@ const CausesManagement = () => {
       // Update the causes list with the server response to ensure sync
       setCauses(prev => prev.map(c => {
         if (c._id === causeId) {
-          return { ...c, ...data.cause };
+          // Make sure isOnline property is correctly set based on the status
+          return { 
+            ...c, 
+            ...data.cause,
+            isOnline: data.cause.status === 'approved' || data.cause.status === 'completed'
+          };
         }
         return c;
       }));
@@ -136,7 +140,7 @@ const CausesManagement = () => {
       });
       
       // Revert the optimistic update
-      const response = await fetch('http://localhost:5000/api/causes');
+      const response = await fetch(`${config.apiUrl}/causes`);
       if (response.ok) {
         const data = await response.json();
         setCauses(data.map((cause: Cause) => ({

@@ -30,12 +30,29 @@ const OnboardingWizard = ({
     phone: '',
     selectedCause: initialCauseId || '',
     toteQuantity: 50,
-    distributionType: 'online' as 'online' | 'physical',
+    distributionType: 'online' as 'online' | 'physical', // Default to online distribution
     numberOfTotes: 50,
     logoUrl: '',
     message: '',
     distributionPoints: [],
+    distributionStartDate: new Date(),
+    distributionEndDate: new Date(new Date().setDate(new Date().getDate() + 30)), // Default to 30 days from now
     distributionDate: undefined,
+    // Add fields for physical distribution
+    distributionPointName: '',
+    distributionPointAddress: '',
+    distributionPointContact: '',
+    distributionPointPhone: '',
+    distributionPointLocation: '',
+    // Add fields for physical distribution locations
+    selectedMalls: [] as string[],
+    selectedMetroStations: [] as string[],
+    selectedAirports: [] as string[],
+    selectedSchools: [] as string[],
+    shippingAddress: '',
+    shippingContactName: '',
+    shippingPhone: '',
+    shippingInstructions: '',
     demographics: {
       ageGroups: [],
       income: '',

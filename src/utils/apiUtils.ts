@@ -3,9 +3,8 @@
  */
 import config from '../config';
 
-// Determine the base domain for API requests
-const isProduction = config.isProduction;
-const API_DOMAIN = isProduction ? 'https://changebag.org' : 'http://localhost:5000';
+// Extract the base domain from the apiUrl
+const API_DOMAIN = config.apiUrl.replace('/api', '');
 
 /**
  * Constructs a full API URL based on the current environment

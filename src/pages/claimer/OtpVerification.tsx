@@ -11,8 +11,7 @@ import {
 } from "@/components/ui/input-otp";
 import { toast } from '@/components/ui/use-toast';
 import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import config from '@/config';
 
 const OtpVerificationPage = () => {
   const navigate = useNavigate();
@@ -50,7 +49,7 @@ const OtpVerificationPage = () => {
   const sendEmailOTP = async (email: string) => {
     console.log('Sending OTP to email:', email);
     try {
-      const response = await axios.post(`${API_URL}/otp/send`, { email });
+      const response = await axios.post(`${config.apiUrl}/otp/send`, { email });
       console.log('OTP send response:', response.data);
       setEmailOtpSent(true); // Mark email OTP as sent
       toast({
@@ -96,7 +95,7 @@ const OtpVerificationPage = () => {
     });
     
     try {
-      const response = await axios.post(`${API_URL}/otp/verify`, {
+      const response = await axios.post(`${config.apiUrl}/otp/verify`, {
         email: formData.email,
         otp: emailOtp
       });

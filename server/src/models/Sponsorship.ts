@@ -22,6 +22,14 @@ export interface IDistributionPoint {
   phone: string;
   location?: string;
   totesCount?: number;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+  openingHours?: string;
+  distributionInstructions?: string;
+  accessibilityInfo?: string;
+  photoUrl?: string;
 }
 
 export interface IDemographics {
@@ -29,6 +37,39 @@ export interface IDemographics {
   income: string;
   education: string;
   other: string;
+}
+
+export enum DistributionLocationType {
+  MALL = 'mall',
+  METRO_STATION = 'metro_station',
+  AIRPORT = 'airport',
+  SCHOOL = 'school',
+  OTHER = 'other'
+}
+
+export interface IDistributionLocation {
+  name: string;
+  type: string; // Use string instead of enum for better compatibility
+  address?: string;
+  totesCount?: number;
+  contactPerson?: string;
+  phone?: string;
+  openingHours?: string;
+  distributionInstructions?: string;
+}
+
+export interface IPhysicalDistributionDetails {
+  shippingAddress?: string;
+  shippingContactName?: string;
+  shippingPhone?: string;
+  shippingInstructions?: string;
+  trackingNumber?: string;
+  shippingProvider?: string;
+  estimatedDeliveryDate?: Date;
+  deliveryConfirmation?: boolean;
+  deliverySignature?: string;
+  deliveryDate?: Date;
+  distributionLocations?: IDistributionLocation[];
 }
 
 export interface ISponsorship extends Document {
@@ -48,6 +89,7 @@ export interface ISponsorship extends Document {
   distributionStartDate: Date;
   distributionEndDate: Date;
   distributionDate?: Date; // Keeping for backward compatibility
+  physicalDistributionDetails?: IPhysicalDistributionDetails;
   demographics: IDemographics;
   status: SponsorshipStatus;
   approvedBy?: mongoose.Types.ObjectId | IUser;
@@ -121,8 +163,38 @@ const sponsorshipSchema = new Schema<ISponsorship>(
       contactPerson: String,
       phone: String,
       location: String,
-      totesCount: Number
+      totesCount: Number,
+      coordinates: {
+        latitude: Number,
+        longitude: Number
+      },
+      openingHours: String,
+      distributionInstructions: String,
+      accessibilityInfo: String,
+      photoUrl: String
     }],
+    physicalDistributionDetails: {
+      shippingAddress: String,
+      shippingContactName: String,
+      shippingPhone: String,
+      shippingInstructions: String,
+      trackingNumber: String,
+      shippingProvider: String,
+      estimatedDeliveryDate: Date,
+      deliveryConfirmation: Boolean,
+      deliverySignature: String,
+      deliveryDate: Date,
+      distributionLocations: [{
+        name: String,
+        type: String, // Simplified to just String type
+        address: String,
+        totesCount: Number,
+        contactPerson: String,
+        phone: String,
+        openingHours: String,
+        distributionInstructions: String
+      }]
+    },
     distributionStartDate: {
       type: Date,
       required: true

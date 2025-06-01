@@ -95,10 +95,9 @@ const LogoUploadStep = ({ formData, updateFormData }: LogoUploadStepProps) => {
     const logoImg = new Image();
     // Handle server-side URLs
     if (previewUrl.startsWith('/uploads/')) {
-      // For uploads, we need to use the main domain, not the API subdomain
-      const baseDomain = config.isProduction ? 'https://changebag.org' : config.apiUrl.split('/api')[0];
-      logoImg.src = `${baseDomain}${previewUrl}`;
-      console.log('Loading server image from:', `${baseDomain}${previewUrl}`);
+      // Use the uploadsUrl from config directly
+      logoImg.src = `${config.uploadsUrl}${previewUrl.replace('/uploads', '')}`;
+      console.log('Loading server image from:', logoImg.src);
     } else {
       logoImg.src = previewUrl;
       console.log('Loading image from:', previewUrl);
@@ -190,48 +189,93 @@ const LogoUploadStep = ({ formData, updateFormData }: LogoUploadStepProps) => {
     if (!file) return;
     
     setUploading(true);
+    setError(null);
 
     try {
-      // For development purposes, we'll use a local file reader approach
-      // since the server endpoint might not be available
-      
-      // Read the file as a data URL
+      // First, show a preview of the selected image
       const reader = new FileReader();
       
-      reader.onload = (event) => {
+      reader.onload = async (event) => {
         if (!event.target?.result) {
           throw new Error('Failed to read file');
         }
         
-        // Use the data URL as the preview
+        // Use the data URL as the preview temporarily
         const dataUrl = event.target.result as string;
-        console.log('Logo loaded as data URL');
+        console.log('Logo loaded as data URL for preview');
         
-        // Compress the image before saving to form data - use more aggressive compression
-        compressImage(dataUrl, file.type, 400, 0.5).then(compressedDataUrl => {
+        try {
+          // Compress the image before uploading to server
+          const compressedDataUrl = await compressImage(dataUrl, file.type, 400, 0.5);
           console.log('Original size:', Math.round(dataUrl.length / 1024), 'KB');
           console.log('Compressed size:', Math.round(compressedDataUrl.length / 1024), 'KB');
           
-          // Update the UI with the compressed data URL
-          setPreviewUrl(compressedDataUrl);
-          updateFormData({ logoUrl: compressedDataUrl });
+          // Create a FormData object to send the file to the server
+          const formData = new FormData();
+          
+          // Convert the compressed data URL back to a Blob
+          const byteString = atob(compressedDataUrl.split(',')[1]);
+          const mimeType = compressedDataUrl.split(',')[0].split(':')[1].split(';')[0];
+          const ab = new ArrayBuffer(byteString.length);
+          const ia = new Uint8Array(ab);
+          
+          for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+          }
+          
+          const blob = new Blob([ab], { type: mimeType });
+          formData.append('logo', blob, file.name);
+          
+          // Upload to server
+          console.log('Uploading logo to server...');
+          const response = await axios.post(`${config.apiUrl}/upload/logo`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
+          
+          console.log('Server response:', response.data);
+          
+          if (response.data && response.data.url) {
+            // Use the server-provided URL
+            const logoUrl = response.data.url;
+            console.log('Logo uploaded successfully, server URL:', logoUrl);
+            
+            // Set the preview to the compressed data URL for immediate display
+            setPreviewUrl(compressedDataUrl);
+            
+            // But save the server URL to the form data
+            updateFormData({ logoUrl });
+            
+            // Reset position for new logo
+            const newPosition = { x: 200, y: 280, scale: 0.25, angle: 0 };
+            setPosition(newPosition);
+            updateFormData({ logoPosition: newPosition });
+          } else {
+            throw new Error('Invalid server response');
+          }
+        } catch (uploadError) {
+          console.error('Error uploading logo to server:', uploadError);
+          
+          // Fall back to client-side approach if server upload fails
+          console.log('Falling back to client-side approach');
+          setPreviewUrl(dataUrl);
+          updateFormData({ logoUrl: dataUrl });
           
           // Reset position for new logo
           const newPosition = { x: 200, y: 280, scale: 0.25, angle: 0 };
           setPosition(newPosition);
           updateFormData({ logoPosition: newPosition });
           
-          setUploading(false);
-        }).catch(error => {
-          console.error('Error compressing image:', error);
-          setError('Failed to process image. Please try a smaller file.');
-          setUploading(false);
-        });
+          setError('Could not upload to server. Using local preview instead.');
+        }
+        
+        setUploading(false);
       };
       
       reader.onerror = () => {
         console.error('Error reading file');
-        alert('Failed to read logo file. Please try again.');
+        setError('Failed to read logo file. Please try again.');
         setUploading(false);
       };
       
@@ -240,7 +284,7 @@ const LogoUploadStep = ({ formData, updateFormData }: LogoUploadStepProps) => {
       
     } catch (error) {
       console.error('Error handling logo:', error);
-      alert('Failed to process logo. Please try again.');
+      setError('Failed to process logo. Please try again.');
       setUploading(false);
     }
   };

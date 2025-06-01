@@ -3,27 +3,76 @@ import Sponsorship, { SponsorshipStatus, DistributionType } from '../models/Spon
 
 export const createSponsorship = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Provide defaults for new schema fields if not provided
+    console.log('Received sponsorship request body:', JSON.stringify(req.body, null, 2));
+    
+    // Check for required fields
+    const requiredFields = ['cause', 'organizationName', 'contactName', 'email', 'phone', 'toteQuantity', 'unitPrice', 'totalAmount'];
+    const missingFields = requiredFields.filter(field => !req.body[field]);
+    
+    if (missingFields.length > 0) {
+      console.error('Missing required fields:', missingFields);
+      res.status(400).json({ 
+        message: 'Missing required fields', 
+        missingFields 
+      });
+      return;
+    }
+    
+    // Handle logoUrl - if it's not provided or is a client-side placeholder, set a default
+    if (!req.body.logoUrl || req.body.logoUrl === 'logo_uploaded_client_side') {
+      req.body.logoUrl = 'https://api.changebag.org/uploads/default-logo.png';
+    }
+    
+    // Create the sponsorship with required fields and defaults
     const sponsorshipData = {
       ...req.body,
       status: SponsorshipStatus.PENDING,
-      // Set default distribution type if not provided
+      // Set default dates if not provided
+      distributionStartDate: req.body.distributionStartDate || new Date(),
+      distributionEndDate: req.body.distributionEndDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+      // Set default values for other required fields if not present
       distributionType: req.body.distributionType || DistributionType.ONLINE,
-      // Ensure distributionPoints exists with at least one default entry for online distribution
-      distributionPoints: req.body.distributionPoints && req.body.distributionPoints.length > 0 
-        ? req.body.distributionPoints 
-        : [{ name: 'Online', address: 'N/A', contactPerson: 'N/A', phone: 'N/A' }]
+      distributionPoints: req.body.distributionPoints || [{ 
+        name: 'Online', 
+        address: 'N/A', 
+        contactPerson: req.body.contactName || 'N/A', 
+        phone: req.body.phone || 'N/A' 
+      }],
+      // Set default demographics if not provided
+      demographics: req.body.demographics || {
+        ageGroups: ['18-24', '25-34', '35-44'],
+        income: 'Mixed',
+        education: 'Mixed',
+        other: 'General audience'
+      }
     };
     
     console.log('Creating sponsorship with data:', JSON.stringify(sponsorshipData, null, 2));
     
     const sponsorship = new Sponsorship(sponsorshipData);
+    
+    // Validate the sponsorship before saving
+    const validationError = sponsorship.validateSync();
+    if (validationError) {
+      console.error('Validation error:', validationError);
+      res.status(400).json({ 
+        message: 'Validation error', 
+        errors: validationError.errors 
+      });
+      return;
+    }
+    
     await sponsorship.save();
     
+    console.log('Sponsorship saved successfully with ID:', sponsorship._id);
     res.status(201).json(sponsorship);
   } catch (error) {
     console.error('Error creating sponsorship:', error);
-    res.status(500).json({ message: 'Error creating sponsorship', error: error.message });
+    res.status(500).json({ 
+      message: 'Error creating sponsorship', 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 
