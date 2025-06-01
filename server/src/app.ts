@@ -81,6 +81,23 @@ app.get('/api/admin', [authGuard, adminGuard] as any, (req: Request, res: Respon
   res.json({ message: 'Admin dashboard data' });
 });
 
+// Base API endpoint
+app.get('/api', (req: Request, res: Response) => {
+  res.status(200).json({
+    message: 'CauseConnect API',
+    version: '1.0.0',
+    endpoints: [
+      '/api/auth',
+      '/api/causes',
+      '/api/sponsorships',
+      '/api/claims',
+      '/api/upload',
+      '/api/otp',
+      '/api/health'
+    ]
+  });
+});
+
 // Health check endpoint
 app.get('/api/health', (req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', message: 'Server is running' });
