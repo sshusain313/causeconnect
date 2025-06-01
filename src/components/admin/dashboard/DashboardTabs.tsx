@@ -66,11 +66,19 @@ const DashboardTabs = () => {
   
   // Configure axios with authentication
   const authAxios = axios.create({
-    baseURL: config.apiUrl, // Use environment-aware API URL instead of hardcoded localhost
+    baseURL: config.apiUrl.replace('/api', ''), // Remove /api suffix as endpoints already include it
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json'
     }
+  });
+  
+  // Log the configuration for debugging
+  console.log('API Configuration:', {
+    configApiUrl: config.apiUrl,
+    baseURL: authAxios.defaults.baseURL,
+    isProduction: config.isProduction,
+    hostname: window.location.hostname
   });
   
   // Fetch pending causes from the API
@@ -78,7 +86,7 @@ const DashboardTabs = () => {
     const fetchPendingCauses = async () => {
       try {
         setLoadingCauses(true);
-        const response = await authAxios.get('/causes', {
+        const response = await authAxios.get('/api/causes', {
           params: { status: 'pending' }
         });
         setPendingCauses(response.data);
@@ -107,7 +115,7 @@ const DashboardTabs = () => {
         setLoadingSponsorships(true);
         console.log('Fetching pending sponsorships with token:', token);
         
-        const response = await authAxios.get('/sponsorships/pending');
+        const response = await authAxios.get('/api/sponsorships/pending');
         console.log('Pending sponsorships response:', response.data);
         
         setPendingSponsorships(response.data);
@@ -139,7 +147,7 @@ const DashboardTabs = () => {
 
       try {
         setLoadingClaims(true);
-        const response = await authAxios.get('/claims', {
+        const response = await authAxios.get('/api/claims', {
           params: { limit: 5 } // Only get 5 most recent claims for dashboard
         });
         console.log('Recent claims response:', response.data);
@@ -173,7 +181,7 @@ const DashboardTabs = () => {
 
   const handleApproveSponsorship = async (id: string) => {
     try {
-      await authAxios.patch(`/sponsorships/${id}/approve`);
+      await authAxios.patch(`/api/sponsorships/${id}/approve`);
       setPendingSponsorships(prev => prev.filter(s => s._id !== id));
       toast({
         title: "Sponsorship Approved",
@@ -191,7 +199,7 @@ const DashboardTabs = () => {
 
   const handleRejectSponsorship = async (id: string) => {
     try {
-      await authAxios.patch(`/sponsorships/${id}/reject`);
+      await authAxios.patch(`/api/sponsorships/${id}/reject`);
       setPendingSponsorships(prev => prev.filter(s => s._id !== id));
       toast({
         title: "Sponsorship Rejected",

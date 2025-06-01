@@ -21,13 +21,12 @@ export const getImageUrl = (url: string | undefined, fallbackImage: string = '/t
   // If it's already an absolute URL (external), return as is
   if (url.startsWith('http://') || url.startsWith('https://')) {
     // Special case: if it's from our domain but has the full URL, extract just the path
-    if (url.includes('changebag.org/uploads/') || url.includes('localhost:5000/uploads/')) {
+    if (url.includes('/uploads/')) {
       // Handle server-side URLs
       if (url.startsWith('/uploads/')) {
-        // Get the base domain without /api
-        // For image uploads, we need to use the main domain, not the API subdomain
-        const baseDomain = config.isProduction ? 'https://changebag.org' : config.apiUrl.split('/api')[0];
-        return `${baseDomain}${url}`;
+        // Use config.uploadsUrl but remove the /uploads part to avoid path duplication
+        const uploadsBasePath = config.uploadsUrl.replace('/uploads', '');
+        return `${uploadsBasePath}${url}`;
       } else {
         return url;
       }

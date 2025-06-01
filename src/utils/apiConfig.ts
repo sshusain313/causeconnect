@@ -2,15 +2,17 @@
  * API Configuration Utility
  * 
  * This file centralizes all API URL configuration to avoid hardcoded localhost URLs
- * throughout the codebase. It uses environment variables to determine the correct
+ * throughout the codebase. It uses the config module to determine the correct
  * base URL for API requests in different environments.
  */
 
-// Get the API base URL from environment variables or use a fallback
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import config from '@/config';
 
-// Get the uploads URL from environment variables or construct it from API base
-export const UPLOADS_BASE_URL = import.meta.env.VITE_UPLOADS_URL || 'http://localhost:5000/uploads';
+// Use config.apiUrl to ensure consistent API URLs across environments
+export const API_BASE_URL = config.apiUrl;
+
+// Use config.uploadsUrl to ensure consistent uploads URLs across environments
+export const UPLOADS_BASE_URL = config.uploadsUrl;
 
 // Get the site URL for absolute links
 export const SITE_URL = import.meta.env.VITE_SITE_URL || 'http://localhost:8083';

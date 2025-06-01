@@ -55,7 +55,11 @@ const PendingCauses: React.FC<PendingCausesProps> = ({ pendingCauses, loading = 
       }
       
       // Call API to update cause status to approved
-      await axios.patch(`${config.apiUrl}/causes/${causeId}/status`, {
+      const apiBaseUrl = config.apiUrl.endsWith('/api') 
+        ? config.apiUrl.slice(0, -4) // Remove trailing /api if it exists
+        : config.apiUrl;
+        
+      await axios.patch(`${apiBaseUrl}/api/causes/${causeId}/status`, {
         status: 'approved'
       }, {
         headers: {
@@ -101,7 +105,12 @@ const PendingCauses: React.FC<PendingCausesProps> = ({ pendingCauses, loading = 
       }
       
       // Call API to update cause status to rejected
-      await axios.patch(`${config.apiUrl}/causes/${causeId}/status`, {
+      // Make sure we're using the correct URL structure
+      const apiBaseUrl = config.apiUrl.endsWith('/api') 
+        ? config.apiUrl.slice(0, -4) // Remove trailing /api if it exists
+        : config.apiUrl;
+        
+      await axios.patch(`${apiBaseUrl}/api/causes/${causeId}/status`, {
         status: 'rejected'
       }, {
         headers: {

@@ -1,28 +1,19 @@
 import axios from 'axios';
+import config from '@/config';
 
 /**
  * API Client for CauseConnect
  * 
  * This module creates a configured Axios instance that:
- * 1. Uses the current domain for API requests in production
- * 2. Falls back to localhost:5000 in development
- * 3. Includes proper error handling and logging
+ * 1. Uses config.apiUrl for consistent API URLs across environments
+ * 2. Includes proper error handling and logging
+ * 3. Handles token authentication
  */
 
-// Determine the base URL for API requests
+// Determine the base URL for API requests using config
 const getBaseUrl = () => {
-  // Check if we're in a browser environment
-  if (typeof window !== 'undefined') {
-    // In production or on changebag.org, use the current domain
-    if (window.location.hostname === 'changebag.org' || 
-        window.location.hostname === 'www.changebag.org' ||
-        import.meta.env.PROD) {
-      return `${window.location.origin}/api`;
-    }
-  }
-  
-  // In development, use localhost
-  return 'http://localhost:5000/api';
+  // Use config.apiUrl for consistent API URLs
+  return config.apiUrl;
 };
 
 // Create a configured Axios instance
@@ -40,13 +31,8 @@ apiClient.interceptors.request.use(
     // Log the request
     console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
     
-    // Ensure we're always using the correct base URL
-    if (typeof window !== 'undefined' && 
-        (window.location.hostname === 'changebag.org' || 
-         window.location.hostname === 'www.changebag.org' ||
-         import.meta.env.PROD)) {
-      config.baseURL = `${window.location.origin}/api`;
-    }
+    // Always use config.apiUrl for the base URL
+    config.baseURL = getBaseUrl();
     
     return config;
   },
@@ -75,11 +61,12 @@ apiClient.interceptors.response.use(
       // The request was made but no response was received
       console.error('No response received:', error.request);
       
-      // If the error is a connection error to localhost:5000, try with the current domain
-      if (error.config && error.config.url && error.config.url.includes('localhost:5000')) {
-        console.log('Retrying request with current domain...');
-        const newUrl = error.config.url.replace('http://localhost:5000', window.location.origin);
-        return apiClient(newUrl);
+      // If there's a connection error, log it but don't try to modify URLs
+      // as we're now using config.apiUrl which should be correct
+      if (error.config && error.config.url) {
+        console.log('Connection error with URL:', error.config.url);
+        // Just return the original error
+        return Promise.reject(error);
       }
     } else {
       // Something happened in setting up the request that triggered an Error

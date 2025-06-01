@@ -39,8 +39,11 @@ const SponsorFormContainer: React.FC<SponsorFormContainerProps> = ({ causeId }) 
       console.log('Submitting data with size:', JSON.stringify(submissionData).length, 'bytes');
       
       // Send data to the server using the correct API URL with /api prefix
-      // Use the base domain directly to avoid URL formation issues
-      const apiEndpoint = config.isProduction ? 'https://api.changebag.org/api/sponsorships' : 'http://localhost:5000/api/sponsorships';
+      // Use config.apiUrl to ensure environment-aware URL construction
+      const apiBaseUrl = config.apiUrl.endsWith('/api') 
+        ? config.apiUrl.slice(0, -4) // Remove trailing /api if it exists
+        : config.apiUrl;
+      const apiEndpoint = `${apiBaseUrl}/api/sponsorships`;
       console.log('Sending sponsorship to endpoint:', apiEndpoint);
       
       const response = await axios.post(apiEndpoint, {

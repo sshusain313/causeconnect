@@ -11,8 +11,10 @@ import {
 } from "@/components/ui/input-otp";
 import { toast } from '@/components/ui/use-toast';
 import axios from 'axios';
+import config from '@/config';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Use config.apiUrl instead of hardcoded URL
+const API_URL = config.apiUrl;
 
 const OtpVerificationPage = () => {
   const navigate = useNavigate();
