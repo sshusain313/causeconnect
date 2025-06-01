@@ -26,8 +26,9 @@ const SponsorFormContainer: React.FC<SponsorFormContainerProps> = ({ causeId }) 
       console.log('Total amount:', formData.totalAmount);
       console.log('Complete form data:', formData);
       
-      // Send data to the server using the config API URL
-      const response = await axios.post(`${config.apiUrl}/sponsorships`, {
+      // Send data to the server using the correct API URL
+      // Note: config.apiUrl already includes /api, so we don't need to add it again
+      const response = await axios.post(`${config.apiUrl.replace('/api', '')}/sponsorships`, {
         ...formData,
         cause: causeId
       });
