@@ -6,6 +6,7 @@ import RecentClaims from './RecentClaims';
 import axios from 'axios';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/AuthContext';
+import config from '@/config';
 
 // Data types
 interface PendingCause {
@@ -65,7 +66,7 @@ const DashboardTabs = () => {
   
   // Configure axios with authentication
   const authAxios = axios.create({
-    baseURL: 'http://localhost:5000/api',
+    baseURL: config.apiUrl, // Use environment-aware API URL instead of hardcoded localhost
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json'

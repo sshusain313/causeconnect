@@ -22,11 +22,14 @@ export const getImageUrl = (url: string | undefined, fallbackImage: string = '/t
   if (url.startsWith('http://') || url.startsWith('https://')) {
     // Special case: if it's from our domain but has the full URL, extract just the path
     if (url.includes('changebag.org/uploads/') || url.includes('localhost:5000/uploads/')) {
-      const parts = url.split('/uploads/');
-      if (parts.length > 1) {
-        const filename = parts[1];
-        console.log('Extracted filename from full URL:', filename);
-        return `/uploads/${filename}`;
+      // Handle server-side URLs
+      if (url.startsWith('/uploads/')) {
+        // Get the base domain without /api
+        // For image uploads, we need to use the main domain, not the API subdomain
+        const baseDomain = config.isProduction ? 'https://changebag.org' : config.apiUrl.split('/api')[0];
+        return `${baseDomain}${url}`;
+      } else {
+        return url;
       }
     }
     return url;
