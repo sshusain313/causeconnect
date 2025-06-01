@@ -24,7 +24,19 @@ const SponsorFormContainer: React.FC<SponsorFormContainerProps> = ({ causeId }) 
       console.log('Submitting sponsorship with tote quantity:', formData.toteQuantity);
       console.log('Unit price:', formData.unitPrice);
       console.log('Total amount:', formData.totalAmount);
-      console.log('Complete form data:', formData);
+      
+      // Create a copy of the data without the large logo URL to reduce payload size
+      const logoUrl = formData.logoUrl;
+      const submissionData = { ...formData };
+      
+      // Store just a reference to having a logo, not the full data URL
+      if (logoUrl && logoUrl.startsWith('data:')) {
+        // Replace the data URL with a flag indicating we have a logo
+        submissionData.logoUrl = 'logo_uploaded_client_side';
+        console.log('Removed large logo data URL from submission payload');
+      }
+      
+      console.log('Submitting data with size:', JSON.stringify(submissionData).length, 'bytes');
       
       // Send data to the server using the correct API URL
       // Use the base domain directly to avoid URL formation issues
@@ -32,7 +44,7 @@ const SponsorFormContainer: React.FC<SponsorFormContainerProps> = ({ causeId }) 
       console.log('Sending sponsorship to endpoint:', apiEndpoint);
       
       const response = await axios.post(apiEndpoint, {
-        ...formData,
+        ...submissionData,
         cause: causeId
       });
       

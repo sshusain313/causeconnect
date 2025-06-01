@@ -207,8 +207,8 @@ const LogoUploadStep = ({ formData, updateFormData }: LogoUploadStepProps) => {
         const dataUrl = event.target.result as string;
         console.log('Logo loaded as data URL');
         
-        // Compress the image before saving to form data
-        compressImage(dataUrl, file.type, 800, 0.7).then(compressedDataUrl => {
+        // Compress the image before saving to form data - use more aggressive compression
+        compressImage(dataUrl, file.type, 400, 0.5).then(compressedDataUrl => {
           console.log('Original size:', Math.round(dataUrl.length / 1024), 'KB');
           console.log('Compressed size:', Math.round(compressedDataUrl.length / 1024), 'KB');
           
@@ -245,7 +245,7 @@ const LogoUploadStep = ({ formData, updateFormData }: LogoUploadStepProps) => {
     }
   };
 
-  // Image compression function
+  // Image compression function with enhanced compression
   const compressImage = (dataUrl: string, fileType: string, maxWidth: number, quality: number): Promise<string> => {
     return new Promise((resolve, reject) => {
       const img = new Image();
