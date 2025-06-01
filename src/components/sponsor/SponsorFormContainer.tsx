@@ -43,9 +43,11 @@ const SponsorFormContainer: React.FC<SponsorFormContainerProps> = ({ causeId }) 
       const apiEndpoint = `${config.apiUrl}/sponsorships`;
       console.log('Sending sponsorship to endpoint:', apiEndpoint);
       
+      // Add the distributionType field to comply with the updated schema
       const response = await axios.post(apiEndpoint, {
         ...submissionData,
-        cause: causeId
+        cause: causeId,
+        distributionType: 'online' // Default to online distribution type
       });
       
       console.log('Sponsorship created successfully with ID:', response.data._id);
