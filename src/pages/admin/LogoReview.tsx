@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +8,7 @@ import { CheckCircle, XCircle, Download, Loader2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
+import config from '@/config';
 
 // Interface for sponsorship data
 interface Sponsorship {
@@ -189,7 +189,7 @@ const LogoReview = () => {
                   <img 
                     src={sponsorship.logoUrl.startsWith('http') 
                       ? sponsorship.logoUrl 
-                      : `http://localhost:5000${sponsorship.logoUrl}`
+                      : `${config.uploadsUrl}${sponsorship.logoUrl.replace('/uploads', '')}`
                     } 
                     alt="Campaign Logo" 
                     className="w-full h-32 object-contain bg-gray-50 rounded border"
@@ -247,7 +247,7 @@ const LogoReview = () => {
                     variant="outline" 
                     size="sm" 
                     className="flex items-center justify-center gap-1"
-                    onClick={() => window.open(sponsorship.logoUrl.startsWith('http') ? sponsorship.logoUrl : `http://localhost:5000${sponsorship.logoUrl}`, '_blank')}
+                    onClick={() => window.open(sponsorship.logoUrl.startsWith('http') ? sponsorship.logoUrl : `${config.uploadsUrl}${sponsorship.logoUrl.replace('/uploads', '')}`, '_blank')}
                   >
                     <Download className="w-4 h-4" />
                     Download Original
