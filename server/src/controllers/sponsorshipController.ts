@@ -1,17 +1,29 @@
 import { Request, Response } from 'express';
-import Sponsorship, { SponsorshipStatus } from '../models/Sponsorship';
+import Sponsorship, { SponsorshipStatus, DistributionType } from '../models/Sponsorship';
 
 export const createSponsorship = async (req: Request, res: Response): Promise<void> => {
   try {
-    const sponsorship = new Sponsorship({
+    // Provide defaults for new schema fields if not provided
+    const sponsorshipData = {
       ...req.body,
-      status: SponsorshipStatus.PENDING
-    });
+      status: SponsorshipStatus.PENDING,
+      // Set default distribution type if not provided
+      distributionType: req.body.distributionType || DistributionType.ONLINE,
+      // Ensure distributionPoints exists with at least one default entry for online distribution
+      distributionPoints: req.body.distributionPoints && req.body.distributionPoints.length > 0 
+        ? req.body.distributionPoints 
+        : [{ name: 'Online', address: 'N/A', contactPerson: 'N/A', phone: 'N/A' }]
+    };
+    
+    console.log('Creating sponsorship with data:', JSON.stringify(sponsorshipData, null, 2));
+    
+    const sponsorship = new Sponsorship(sponsorshipData);
     await sponsorship.save();
+    
     res.status(201).json(sponsorship);
   } catch (error) {
     console.error('Error creating sponsorship:', error);
-    res.status(500).json({ message: 'Error creating sponsorship' });
+    res.status(500).json({ message: 'Error creating sponsorship', error: error.message });
   }
 };
 
