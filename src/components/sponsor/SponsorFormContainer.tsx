@@ -38,12 +38,9 @@ const SponsorFormContainer: React.FC<SponsorFormContainerProps> = ({ causeId }) 
       
       console.log('Submitting data with size:', JSON.stringify(submissionData).length, 'bytes');
       
-      // Send data to the server using the correct API URL with /api prefix
-      // Use config.apiUrl to ensure environment-aware URL construction
-      const apiBaseUrl = config.apiUrl.endsWith('/api') 
-        ? config.apiUrl.slice(0, -4) // Remove trailing /api if it exists
-        : config.apiUrl;
-      const apiEndpoint = `${apiBaseUrl}/api/sponsorships`;
+      // Send data to the server using the config.apiUrl to ensure consistency
+      // This will properly handle both development and production environments
+      const apiEndpoint = `${config.apiUrl}/sponsorships`;
       console.log('Sending sponsorship to endpoint:', apiEndpoint);
       
       const response = await axios.post(apiEndpoint, {
