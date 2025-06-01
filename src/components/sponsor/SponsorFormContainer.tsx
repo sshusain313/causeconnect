@@ -44,6 +44,9 @@ const SponsorFormContainer: React.FC<SponsorFormContainerProps> = ({ causeId }) 
       const apiEndpoint = `${config.apiUrl}/sponsorships`;
       console.log('Sending sponsorship to endpoint:', apiEndpoint);
       
+      // Add additional debugging for API URL
+      console.log('Config API URL:', config.apiUrl);
+      
       // Log the original distribution type from the form
       console.log('Original distribution type from form:', submissionData.distributionType);
       
@@ -158,11 +161,66 @@ const SponsorFormContainer: React.FC<SponsorFormContainerProps> = ({ causeId }) 
       // Log the complete payload for debugging
       console.log('Sending complete payload:', JSON.stringify(payload, null, 2));
       
-      const response = await axios.post(apiEndpoint, payload);
+      // Log the exact URL being used for debugging
+      console.log('Full API URL being used:', apiEndpoint);
       
-      console.log('Sponsorship created successfully with ID:', response.data._id);
-      console.log('Server response:', response.data);
+      let responseData;
       
+      // Try the request with more detailed error handling
+      try {
+        // Use axios with explicit configuration to handle potential CORS issues
+        const response = await axios.post(apiEndpoint, payload, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : ''
+          },
+          withCredentials: true
+        });
+        
+        responseData = response.data;
+        console.log('Sponsorship created successfully with ID:', responseData._id);
+        console.log('Server response:', responseData);
+      } catch (requestError: any) {
+        // Log detailed error information
+        console.error('Detailed request error:', {
+          status: requestError.response?.status,
+          statusText: requestError.response?.statusText,
+          data: requestError.response?.data,
+          headers: requestError.response?.headers,
+          config: requestError.config
+        });
+        
+        // If we get a 405 Method Not Allowed error, try an alternative endpoint format
+        if (requestError.response?.status === 405) {
+          console.log('Received 405 error, trying alternative endpoint format...');
+          
+          // Try with a different endpoint format (without /api prefix)
+          const altEndpoint = apiEndpoint.replace('/api/sponsorships', '/sponsorships');
+          console.log('Trying alternative endpoint:', altEndpoint);
+          
+          try {
+            const altResponse = await axios.post(altEndpoint, payload, {
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : ''
+              },
+              withCredentials: true
+            });
+            
+            responseData = altResponse.data;
+            console.log('Sponsorship created successfully with alternative endpoint, ID:', responseData._id);
+            console.log('Server response from alternative endpoint:', responseData);
+          } catch (altError) {
+            console.error('Alternative endpoint also failed:', altError);
+            throw altError;
+          }
+        } else {
+          // Re-throw the error if it's not a 405
+          throw requestError;
+        }
+      }
+      
+      // If we got here, we have a successful response
       toast({
         title: "Sponsorship Request Submitted",
         description: "Thank you for your sponsorship! We'll review your request and get back to you soon.",
@@ -170,7 +228,7 @@ const SponsorFormContainer: React.FC<SponsorFormContainerProps> = ({ causeId }) 
       
       // Navigate to a confirmation page instead of dashboard
       navigate('/sponsorship/confirmation', { 
-        state: { sponsorshipId: response.data._id } 
+        state: { sponsorshipId: responseData._id } 
       });
     } catch (error: any) {
       console.error('Error submitting sponsorship:', error);

@@ -24,7 +24,9 @@ const CreateCause = () => {
     imageUrl: '',
     targetAmount: '',
     location: '',
-    category: ''
+    category: '',
+    tags: [] as string[],
+    currentTag: ''
   });
   
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -102,21 +104,35 @@ const CreateCause = () => {
       
       console.log('Sending cause data with image');
       
+      // Log the API URL being used
+      console.log('Creating cause using API URL:', `${config.apiUrl}/causes`);
+      console.log('Config details:', {
+        apiUrl: config.apiUrl,
+        isProduction: config.isProduction,
+        hostname: window.location.hostname
+      });
+      
       try {
         // Use a direct fetch call with FormData for file upload
+        console.log('Sending request to:', `${config.apiUrl}/causes`);
+        console.log('With token:', token ? 'Bearer token present' : 'No token');
+        
         const fetchResponse = await fetch(`${config.apiUrl}/causes`, {
           method: 'POST',
           headers: {
-            'Authorization': token ? `Bearer ${token}` : ''
+            'Authorization': token ? `Bearer ${token}` : '',
             // Note: Do not set Content-Type when sending FormData
             // The browser will set it automatically with the correct boundary
+            'Accept': 'application/json'
           },
-          credentials: 'include',
+          credentials: 'include', // This enables sending cookies with cross-origin requests
+          mode: 'cors', // Explicitly set CORS mode
           body: formDataToSend
         });
         
         // Log the response headers for debugging
         console.log('Response status:', fetchResponse.status);
+        console.log('Response headers:', [...fetchResponse.headers.entries()]);
         
         if (fetchResponse.status === 401) {
           toast({
@@ -130,10 +146,19 @@ const CreateCause = () => {
           return;
         }
         
+        // Try to parse the response JSON with better error handling
+        let responseData;
+        try {
+          responseData = await fetchResponse.json();
+        } catch (jsonError) {
+          console.error('Error parsing response JSON:', jsonError);
+          responseData = {};
+        }
+        
         // Convert to a format compatible with our existing code
         response = {
           status: fetchResponse.status,
-          data: await fetchResponse.json().catch(() => ({}))
+          data: responseData
         };
         
         console.log('API response:', response);

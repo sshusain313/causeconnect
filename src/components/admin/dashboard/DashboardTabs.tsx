@@ -64,70 +64,160 @@ const DashboardTabs = () => {
   const [errorSponsorships, setErrorSponsorships] = useState('');
   const [errorClaims, setErrorClaims] = useState('');
   
+  // Log configuration details for debugging
+  useEffect(() => {
+    console.log('Admin Dashboard Config:', {
+      apiUrl: config.apiUrl,
+      isProduction: config.isProduction,
+      token: token ? 'Token exists' : 'No token',
+      tokenLength: token?.length
+    });
+  }, [token]);
+  
   // Configure axios with authentication
   const authAxios = axios.create({
     baseURL: config.apiUrl,
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json'
-    }
+    },
+    withCredentials: true // Add withCredentials to handle CORS properly
   });
   
   // Fetch pending causes from the API
   useEffect(() => {
     const fetchPendingCauses = async () => {
+      if (!token) {
+        console.warn('No auth token available for fetching causes');
+        setErrorCauses('Authentication required');
+        setLoadingCauses(false);
+        return;
+      }
+
       try {
         setLoadingCauses(true);
+        console.log('Fetching pending causes with URL:', `${config.apiUrl}/causes?status=pending`);
+        
+        // Log the request headers for debugging
+        console.log('Request headers:', {
+          Authorization: `Bearer ${token.substring(0, 10)}...`, // Only log part of the token for security
+          'Content-Type': 'application/json'
+        });
+        
         const response = await authAxios.get('/causes', {
           params: { status: 'pending' }
         });
+        
+        console.log('Pending causes response:', {
+          status: response.status,
+          dataCount: Array.isArray(response.data) ? response.data.length : 'not an array',
+          data: response.data
+        });
+        
         setPendingCauses(response.data);
       } catch (err: any) {
-        console.error('Error fetching pending causes:', err.response?.data || err.message);
-        setErrorCauses('Failed to load pending causes');
+        console.error('Error fetching pending causes:', {
+          status: err.response?.status,
+          statusText: err.response?.statusText,
+          data: err.response?.data,
+          message: err.message
+        });
+        
+        // More descriptive error message based on the error type
+        if (err.response?.status === 401) {
+          setErrorCauses('Authentication failed. Please log in again.');
+        } else if (err.response?.status === 403) {
+          setErrorCauses('You do not have permission to view pending causes.');
+        } else if (err.response?.status === 404) {
+          setErrorCauses('The causes endpoint could not be found. Please check API configuration.');
+        } else {
+          setErrorCauses(`Failed to load pending causes: ${err.response?.data?.message || err.message}`);
+        }
       } finally {
         setLoadingCauses(false);
       }
     };
     
-    if (token) {
-      fetchPendingCauses();
-    }
-  }, [token]);
+    fetchPendingCauses();
+  }, [token, config.apiUrl, authAxios]);
 
   // Fetch pending sponsorships from the API
   useEffect(() => {
     const fetchPendingSponsorships = async () => {
       if (!token) {
-        console.warn('No auth token available');
+        console.warn('No auth token available for fetching sponsorships');
+        setErrorSponsorships('Authentication required');
+        setLoadingSponsorships(false);
         return;
       }
 
       try {
         setLoadingSponsorships(true);
-        console.log('Fetching pending sponsorships with token:', token);
+        console.log('Fetching pending sponsorships with URL:', `${config.apiUrl}/sponsorships/pending`);
         
-        const response = await authAxios.get('/sponsorships/pending');
-        console.log('Pending sponsorships response:', response.data);
+        // Log the request headers for debugging
+        console.log('Request headers for sponsorships:', {
+          Authorization: `Bearer ${token.substring(0, 10)}...`, // Only log part of the token for security
+          'Content-Type': 'application/json'
+        });
         
-        setPendingSponsorships(response.data);
+        // Try the standard endpoint first
+        try {
+          const response = await authAxios.get('/sponsorships/pending');
+          console.log('Pending sponsorships response:', {
+            status: response.status,
+            dataCount: Array.isArray(response.data) ? response.data.length : 'not an array',
+            data: response.data
+          });
+          
+          setPendingSponsorships(response.data);
+        } catch (endpointError: any) {
+          // If we get a 404, try an alternative endpoint format
+          if (endpointError.response?.status === 404) {
+            console.log('Sponsorships pending endpoint not found, trying alternative...');
+            
+            // Try with a different endpoint format
+            const altResponse = await authAxios.get('/sponsorships', {
+              params: { status: 'pending' }
+            });
+            
+            console.log('Alternative sponsorships response:', {
+              status: altResponse.status,
+              dataCount: Array.isArray(altResponse.data) ? altResponse.data.length : 'not an array',
+              data: altResponse.data
+            });
+            
+            setPendingSponsorships(altResponse.data);
+          } else {
+            // Re-throw the error if it's not a 404
+            throw endpointError;
+          }
+        }
       } catch (err: any) {
         console.error('Error fetching pending sponsorships:', {
           status: err.response?.status,
+          statusText: err.response?.statusText,
           data: err.response?.data,
           message: err.message
         });
-        setErrorSponsorships(
-          err.response?.data?.message || 
-          'Failed to load pending sponsorships. Please check your permissions.'
-        );
+        
+        // More descriptive error message based on the error type
+        if (err.response?.status === 401) {
+          setErrorSponsorships('Authentication failed. Please log in again.');
+        } else if (err.response?.status === 403) {
+          setErrorSponsorships('You do not have permission to view pending sponsorships.');
+        } else if (err.response?.status === 404) {
+          setErrorSponsorships('The sponsorships endpoint could not be found. Please check API configuration.');
+        } else {
+          setErrorSponsorships(`Failed to load pending sponsorships: ${err.response?.data?.message || err.message}`);
+        }
       } finally {
         setLoadingSponsorships(false);
       }
     };
     
     fetchPendingSponsorships();
-  }, [token]);
+  }, [token, config.apiUrl, authAxios]);
   
   // Fetch recent claims from the API
   useEffect(() => {
@@ -173,37 +263,117 @@ const DashboardTabs = () => {
 
   const handleApproveSponsorship = async (id: string) => {
     try {
-      await authAxios.patch(`/sponsorships/${id}/approve`);
+      console.log(`Approving sponsorship with ID: ${id}`);
+      console.log(`Using API URL: ${config.apiUrl}/sponsorships/${id}/approve`);
+      
+      // Make the API call with explicit configuration
+      const response = await authAxios.patch(`/sponsorships/${id}/approve`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
+      });
+      
+      console.log('Sponsorship approval response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+        data: response.data
+      });
+      
       setPendingSponsorships(prev => prev.filter(s => s._id !== id));
       toast({
         title: "Sponsorship Approved",
         description: "The sponsorship has been successfully approved.",
       });
     } catch (err: any) {
-      console.error('Error approving sponsorship:', err.response?.data || err.message);
-      toast({
-        title: "Error",
-        description: err.response?.data?.message || "Failed to approve sponsorship. Please try again.",
-        variant: "destructive",
+      console.error('Error approving sponsorship:', {
+        message: err.message,
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data,
+        headers: err.response?.headers
       });
+      
+      // Provide more specific error messages based on the error type
+      if (err.message.includes('Network Error') || err.message.includes('CORS')) {
+        toast({
+          title: "CORS Error",
+          description: "There was a cross-origin request issue. Please check server CORS configuration.",
+          variant: "destructive",
+        });
+      } else if (err.response?.status === 401) {
+        toast({
+          title: "Authentication Error",
+          description: "Your session may have expired. Please log in again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: err.response?.data?.message || "Failed to approve sponsorship. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
   const handleRejectSponsorship = async (id: string) => {
     try {
-      await authAxios.patch(`/sponsorships/${id}/reject`);
+      console.log(`Rejecting sponsorship with ID: ${id}`);
+      console.log(`Using API URL: ${config.apiUrl}/sponsorships/${id}/reject`);
+      
+      // Make the API call with explicit configuration
+      const response = await authAxios.patch(`/sponsorships/${id}/reject`, {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
+      });
+      
+      console.log('Sponsorship rejection response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+        data: response.data
+      });
+      
       setPendingSponsorships(prev => prev.filter(s => s._id !== id));
       toast({
         title: "Sponsorship Rejected",
         description: "The sponsorship has been rejected.",
       });
     } catch (err: any) {
-      console.error('Error rejecting sponsorship:', err.response?.data || err.message);
-      toast({
-        title: "Error",
-        description: err.response?.data?.message || "Failed to reject sponsorship. Please try again.",
-        variant: "destructive",
+      console.error('Error rejecting sponsorship:', {
+        message: err.message,
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data,
+        headers: err.response?.headers
       });
+      
+      // Provide more specific error messages based on the error type
+      if (err.message.includes('Network Error') || err.message.includes('CORS')) {
+        toast({
+          title: "CORS Error",
+          description: "There was a cross-origin request issue. Please check server CORS configuration.",
+          variant: "destructive",
+        });
+      } else if (err.response?.status === 401) {
+        toast({
+          title: "Authentication Error",
+          description: "Your session may have expired. Please log in again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: err.response?.data?.message || "Failed to reject sponsorship. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

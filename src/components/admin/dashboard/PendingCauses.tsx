@@ -54,13 +54,17 @@ const PendingCauses: React.FC<PendingCausesProps> = ({ pendingCauses, loading = 
         return;
       }
       
+      console.log('Approving cause with URL:', `${config.apiUrl}/causes/${causeId}/status`);
+      
       // Call API to update cause status to approved
       await axios.patch(`${config.apiUrl}/causes/${causeId}/status`, {
         status: 'approved'
       }, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
       });
       
       toast({
@@ -100,13 +104,17 @@ const PendingCauses: React.FC<PendingCausesProps> = ({ pendingCauses, loading = 
         return;
       }
       
+      console.log('Rejecting cause with URL:', `${config.apiUrl}/causes/${causeId}/status`);
+      
       // Call API to update cause status to rejected
       await axios.patch(`${config.apiUrl}/causes/${causeId}/status`, {
         status: 'rejected'
       }, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
       });
       
       toast({

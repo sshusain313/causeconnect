@@ -23,10 +23,7 @@ app.use((express as any).urlencoded({ extended: true }));
 app.use(cookieParser());
 // Configure CORS to allow requests from the frontend domain
 app.use(cors({
-  origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, etc)
-    if (!origin) return callback(null, true);
-    
+  origin: (origin, callback) => {
     const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
       'https://changebag.org', 
       'https://www.changebag.org',
@@ -36,8 +33,8 @@ app.use(cors({
       'http://localhost:5173'
     ];
     
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
-      callback(null, origin);
+    if (!origin || allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
     } else {
       console.log('CORS blocked origin:', origin);
       callback(new Error(`Origin ${origin} not allowed by CORS`));
@@ -47,10 +44,11 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   preflightContinue: false,
-  optionsSuccessStatus: 204
+  optionsSuccessStatus: 204,
+  maxAge: 86400 // Cache preflight response for 24 hours
 }));
 
-// Add CORS headers to all responses
+// Add CORS headers to all responses with improved preflight handling
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (origin) {
@@ -66,10 +64,17 @@ app.use((req, res, next) => {
     if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
       res.header('Access-Control-Allow-Origin', origin);
       res.header('Access-Control-Allow-Credentials', 'true');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+      
+      // Handle preflight requests
+      if (req.method === 'OPTIONS') {
+        console.log('Received OPTIONS request from origin:', origin);
+        res.status(204).end();
+        return;
+      }
     }
   }
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   next();
 });
 
