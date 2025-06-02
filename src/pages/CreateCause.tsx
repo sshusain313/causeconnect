@@ -113,52 +113,44 @@ const CreateCause = () => {
       });
       
       try {
-        // Use a direct fetch call with FormData for file upload
+        // Use axios instead of fetch for better CORS handling
         console.log('Sending request to:', `${config.apiUrl}/causes`);
         console.log('With token:', token ? 'Bearer token present' : 'No token');
         
-        const fetchResponse = await fetch(`${config.apiUrl}/causes`, {
+        // Create a detailed log of what we're about to send
+        console.log('Request details:', {
+          url: `${config.apiUrl}/causes`,
           method: 'POST',
+          headers: {
+            'Authorization': token ? 'Bearer token present' : 'No token',
+            'Accept': 'application/json'
+          },
+          withCredentials: true
+        });
+        
+        // Use axios instead of fetch
+        const fetchResponse = await axios.post(`${config.apiUrl}/causes`, formDataToSend, {
           headers: {
             'Authorization': token ? `Bearer ${token}` : '',
             // Note: Do not set Content-Type when sending FormData
-            // The browser will set it automatically with the correct boundary
+            // Axios will set it automatically with the correct boundary
             'Accept': 'application/json'
           },
-          credentials: 'include', // This enables sending cookies with cross-origin requests
-          mode: 'cors', // Explicitly set CORS mode
-          body: formDataToSend
+          withCredentials: true // This enables sending cookies with cross-origin requests
         });
         
-        // Log the response headers for debugging
+        // Log the response details for debugging
         console.log('Response status:', fetchResponse.status);
-        console.log('Response headers:', [...fetchResponse.headers.entries()]);
+        console.log('Response headers:', fetchResponse.headers);
+        console.log('Response data:', fetchResponse.data);
         
-        if (fetchResponse.status === 401) {
-          toast({
-            title: 'Authentication Error',
-            description: 'You must be logged in to create a cause. Please log in and try again.',
-            variant: 'destructive'
-          });
-          
-          // Redirect to login page
-          navigate('/login');
-          return;
-        }
-        
-        // Try to parse the response JSON with better error handling
-        let responseData;
-        try {
-          responseData = await fetchResponse.json();
-        } catch (jsonError) {
-          console.error('Error parsing response JSON:', jsonError);
-          responseData = {};
-        }
+        // With axios, the response is already parsed as JSON
+        // and status codes are handled automatically
         
         // Convert to a format compatible with our existing code
         response = {
           status: fetchResponse.status,
-          data: responseData
+          data: fetchResponse.data
         };
         
         console.log('API response:', response);
@@ -184,11 +176,45 @@ const CreateCause = () => {
       }
     } catch (error: any) {
       console.error('Error creating cause:', error);
-      toast({
-        title: 'Error',
-        description: error.response?.data?.message || 'Failed to create cause. Please try again.',
-        variant: 'destructive'
+      
+      // Log detailed error information for debugging
+      console.error('Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers,
+        config: error.config
       });
+      
+      // Handle different types of errors
+      if (error.message.includes('Network Error') || error.message.includes('CORS')) {
+        toast({
+          title: 'CORS Error',
+          description: 'There was a cross-origin request issue. Please try again or contact support.',
+          variant: 'destructive'
+        });
+      } else if (error.response?.status === 401) {
+        toast({
+          title: 'Authentication Error',
+          description: 'You must be logged in to create a cause. Please log in and try again.',
+          variant: 'destructive'
+        });
+        // Redirect to login page
+        navigate('/login');
+      } else if (error.response?.status === 400) {
+        toast({
+          title: 'Validation Error',
+          description: error.response.data.message || 'Please check your form inputs and try again.',
+          variant: 'destructive'
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: error.response?.data?.message || 'Failed to create cause. Please try again.',
+          variant: 'destructive'
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
