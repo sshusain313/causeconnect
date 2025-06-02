@@ -70,8 +70,15 @@ const ClaimFormPage = () => {
   const { data: cause, isLoading, error } = useQuery<Cause>({
     queryKey: ['cause', id],
     queryFn: async () => {
-      const response = await axios.get(`/api/causes/${id}`);
-      return response.data;
+      try {
+        console.log(`Fetching cause data from ${config.apiUrl}/causes/${id}`);
+        const response = await axios.get(`${config.apiUrl}/causes/${id}`);
+        console.log('Cause data response:', response.data);
+        return response.data;
+      } catch (err) {
+        console.error('Error fetching cause data:', err);
+        throw err;
+      }
     },
   });
   
@@ -129,13 +136,16 @@ const ClaimFormPage = () => {
       sessionStorage.setItem('claimFormData', JSON.stringify(claimData));
       
       // Send data to the server
-      const response = await fetch('/api/claims', {
+      console.log(`Submitting claim to ${config.apiUrl}/claims`);
+      const response = await fetch(`${config.apiUrl}/claims`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(claimData)
       });
+      
+      console.log('Claim submission response status:', response.status);
       
       if (!response.ok) {
         const errorData = await response.json();
