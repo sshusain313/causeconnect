@@ -45,6 +45,13 @@ interface Cause {
   title: string;
   imageUrl: string;
   sponsor?: Sponsor;
+  // Add these fields to match the API response format
+  sponsors?: Sponsor[];
+  sponsorships?: Array<{
+    _id: string;
+    status: string;
+    amount?: number;
+  }>;
   totalTotes: number;
   claimedTotes: number;
   availableTotes: number;
@@ -175,13 +182,23 @@ const ClaimFormPage = () => {
     );
   }
 
-  // Check if cause is not approved
-  if (cause.status !== 'approved') {
+  // Debug cause data
+  console.log('Cause data in ClaimForm:', cause);
+  
+  // Check if cause is available for claims
+  const hasSponsorship = cause.sponsor || 
+                       (cause.sponsors && cause.sponsors.length > 0) || 
+                       (cause.sponsorships && cause.sponsorships.length > 0);
+  
+  const isAvailable = (cause.status === 'approved' || cause.status === 'open') && hasSponsorship;
+  
+  if (!isAvailable) {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-8 text-center">
           <h1 className="text-2xl font-bold text-yellow-600 mb-4">Cause Not Available</h1>
           <p className="text-gray-600 mb-4">This cause is not currently available for claims.</p>
+          <p className="text-sm text-gray-500 mb-4">Status: {cause.status}, Has sponsorship: {hasSponsorship ? 'Yes' : 'No'}</p>
           <Button variant="outline" onClick={() => navigate('/causes')}>View Other Causes</Button>
         </div>
       </Layout>
