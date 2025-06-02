@@ -30,8 +30,14 @@ const CauseDetail = () => {
     enabled: !!id,
   });
   
-  // Check if the cause has any sponsors
-  const hasSponsorship = cause?.sponsors && cause.sponsors.length > 0;
+  // Check if the cause has any sponsors - fix for API response format inconsistency
+  const hasSponsorship = cause?.sponsors && cause.sponsors.length > 0 || 
+                       cause?.sponsorships && cause.sponsorships.length > 0 ||
+                       (cause?.availableTotes && cause.availableTotes > 0);
+  
+  // Debug sponsorship detection
+  console.log('Cause data:', cause);
+  console.log('Has sponsorship:', hasSponsorship);
 
   const handleAction = () => {
     // Navigate to claim page

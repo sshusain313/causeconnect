@@ -20,15 +20,21 @@ export interface Cause {
   category: string;
   targetAmount: number;
   currentAmount: number;
-  status: "open" | "sponsored" | "waitlist" | "completed";
+  status: "open" | "sponsored" | "waitlist" | "completed" | "approved";
   claimedBy?: string;
   sponsors: Sponsor[];
+  // Add sponsorships field to match API response format
+  sponsorships?: Array<{
+    _id: string;
+    status: string;
+    amount?: number;
+  }>;
   claims?: ToteClaim[];
   totalTotes?: number;
   claimedTotes?: number;
   availableTotes?: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
 
 export interface Sponsor {
