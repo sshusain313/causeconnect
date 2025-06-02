@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Search, CheckCircle, XCircle, Eye, ArrowUpDown, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '@/context/AuthContext';
+import config from '@/config';
 
 // Define the Claim interface
 interface Claim {
@@ -51,7 +52,8 @@ const ClaimsManagement = () => {
       
       try {
         setLoading(true);
-        const response = await axios.get('/api/claims', {
+        console.log(`Fetching claims from ${config.apiUrl}/claims`);
+        const response = await axios.get(`${config.apiUrl}/claims`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -81,7 +83,8 @@ const ClaimsManagement = () => {
 
   const handleApprove = async (claimId: string) => {
     try {
-      const response = await axios.patch(`/api/claims/${claimId}/status`, 
+      console.log(`Approving claim at ${config.apiUrl}/claims/${claimId}/status`);
+      const response = await axios.patch(`${config.apiUrl}/claims/${claimId}/status`, 
         { status: 'verified' },
         { headers: { Authorization: `Bearer ${token}` }}
       );
@@ -107,7 +110,8 @@ const ClaimsManagement = () => {
 
   const handleReject = async (claimId: string) => {
     try {
-      const response = await axios.patch(`/api/claims/${claimId}/status`, 
+      console.log(`Rejecting claim at ${config.apiUrl}/claims/${claimId}/status`);
+      const response = await axios.patch(`${config.apiUrl}/claims/${claimId}/status`, 
         { status: 'cancelled' },
         { headers: { Authorization: `Bearer ${token}` }}
       );
