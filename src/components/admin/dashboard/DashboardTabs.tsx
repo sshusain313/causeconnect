@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PendingCauses from './PendingCauses';
 import PendingSponsorships from './PendingSponsorships';
@@ -74,15 +74,18 @@ const DashboardTabs = () => {
     });
   }, [token]);
   
-  // Configure axios with authentication
-  const authAxios = axios.create({
-    baseURL: config.apiUrl,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
-    withCredentials: true // Add withCredentials to handle CORS properly
-  });
+  // Configure axios with authentication - use useMemo to prevent recreation on every render
+  const authAxios = useMemo(() => {
+    console.log('Creating new authAxios instance with token:', token ? 'Token exists' : 'No token');
+    return axios.create({
+      baseURL: config.apiUrl,
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json'
+      },
+      withCredentials: true // Add withCredentials to handle CORS properly
+    });
+  }, [token, config.apiUrl]); // Only recreate when token or apiUrl changes
   
   // Fetch pending causes from the API
   useEffect(() => {
@@ -97,19 +100,30 @@ const DashboardTabs = () => {
       try {
         setLoadingCauses(true);
         console.log('Fetching pending causes with URL:', `${config.apiUrl}/causes?status=pending`);
+        console.log('Current time:', new Date().toISOString());
         
-        // Log the request headers for debugging
+        // Log the request headers and auth details for debugging
         console.log('Request headers:', {
-          Authorization: `Bearer ${token.substring(0, 10)}...`, // Only log part of the token for security
+          Authorization: token ? `Bearer ${token.substring(0, 10)}...` : 'No token', // Only log part of the token for security
           'Content-Type': 'application/json'
         });
         
-        const response = await authAxios.get('/causes', {
-          params: { status: 'pending' }
+        // Make the request with explicit configuration to ensure proper headers
+        const response = await axios({
+          method: 'GET',
+          url: `${config.apiUrl}/causes`,
+          params: { status: 'pending' },
+          headers: {
+            Authorization: token ? `Bearer ${token}` : '',
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true
         });
         
         console.log('Pending causes response:', {
           status: response.status,
+          statusText: response.statusText,
+          headers: response.headers,
           dataCount: Array.isArray(response.data) ? response.data.length : 'not an array',
           data: response.data
         });
@@ -154,18 +168,31 @@ const DashboardTabs = () => {
       try {
         setLoadingSponsorships(true);
         console.log('Fetching pending sponsorships with URL:', `${config.apiUrl}/sponsorships/pending`);
+        console.log('Current time:', new Date().toISOString());
         
         // Log the request headers for debugging
         console.log('Request headers for sponsorships:', {
-          Authorization: `Bearer ${token.substring(0, 10)}...`, // Only log part of the token for security
+          Authorization: token ? `Bearer ${token.substring(0, 10)}...` : 'No token', // Only log part of the token for security
           'Content-Type': 'application/json'
         });
         
         // Try the standard endpoint first
         try {
-          const response = await authAxios.get('/sponsorships/pending');
+          // Make the request with explicit configuration to ensure proper headers
+          const response = await axios({
+            method: 'GET',
+            url: `${config.apiUrl}/sponsorships/pending`,
+            headers: {
+              Authorization: token ? `Bearer ${token}` : '',
+              'Content-Type': 'application/json'
+            },
+            withCredentials: true
+          });
+          
           console.log('Pending sponsorships response:', {
             status: response.status,
+            statusText: response.statusText,
+            headers: response.headers,
             dataCount: Array.isArray(response.data) ? response.data.length : 'not an array',
             data: response.data
           });
@@ -173,23 +200,39 @@ const DashboardTabs = () => {
           setPendingSponsorships(response.data);
         } catch (endpointError: any) {
           // If we get a 404, try an alternative endpoint format
+          console.log('Error with primary sponsorships endpoint:', {
+            status: endpointError.response?.status,
+            statusText: endpointError.response?.statusText,
+            data: endpointError.response?.data,
+            message: endpointError.message
+          });
+          
           if (endpointError.response?.status === 404) {
             console.log('Sponsorships pending endpoint not found, trying alternative...');
             
             // Try with a different endpoint format
-            const altResponse = await authAxios.get('/sponsorships', {
-              params: { status: 'pending' }
+            const altResponse = await axios({
+              method: 'GET',
+              url: `${config.apiUrl}/sponsorships`,
+              params: { status: 'pending' },
+              headers: {
+                Authorization: token ? `Bearer ${token}` : '',
+                'Content-Type': 'application/json'
+              },
+              withCredentials: true
             });
             
-            console.log('Alternative sponsorships response:', {
+            console.log('Alternative pending sponsorships response:', {
               status: altResponse.status,
+              statusText: altResponse.statusText,
+              headers: altResponse.headers,
               dataCount: Array.isArray(altResponse.data) ? altResponse.data.length : 'not an array',
               data: altResponse.data
             });
             
             setPendingSponsorships(altResponse.data);
           } else {
-            // Re-throw the error if it's not a 404
+            // Re-throw if it's not a 404
             throw endpointError;
           }
         }
@@ -266,12 +309,26 @@ const DashboardTabs = () => {
       console.log(`Approving sponsorship with ID: ${id}`);
       console.log(`Using API URL: ${config.apiUrl}/sponsorships/${id}/approve`);
       
-      // Make the API call with explicit configuration
-      const response = await authAxios.patch(`/sponsorships/${id}/approve`, {}, {
+      if (!token) {
+        console.error('No authentication token available');
+        toast({
+          title: "Authentication Error",
+          description: "You need to be logged in to approve sponsorships.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Make a direct axios call instead of using authAxios
+      const response = await axios({
+        method: 'PATCH',
+        url: `${config.apiUrl}/sponsorships/${id}/approve`,
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
+        data: {},
         withCredentials: true
       });
       
@@ -287,6 +344,11 @@ const DashboardTabs = () => {
         title: "Sponsorship Approved",
         description: "The sponsorship has been successfully approved.",
       });
+      
+      // Refresh the data after approval
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     } catch (err: any) {
       console.error('Error approving sponsorship:', {
         message: err.message,
@@ -306,13 +368,13 @@ const DashboardTabs = () => {
       } else if (err.response?.status === 401) {
         toast({
           title: "Authentication Error",
-          description: "Your session may have expired. Please log in again.",
+          description: "You need to be logged in to approve sponsorships.",
           variant: "destructive",
         });
       } else {
         toast({
           title: "Error",
-          description: err.response?.data?.message || "Failed to approve sponsorship. Please try again.",
+          description: `Failed to approve sponsorship: ${err.response?.data?.message || err.message}`,
           variant: "destructive",
         });
       }
@@ -324,12 +386,26 @@ const DashboardTabs = () => {
       console.log(`Rejecting sponsorship with ID: ${id}`);
       console.log(`Using API URL: ${config.apiUrl}/sponsorships/${id}/reject`);
       
-      // Make the API call with explicit configuration
-      const response = await authAxios.patch(`/sponsorships/${id}/reject`, {}, {
+      if (!token) {
+        console.error('No authentication token available');
+        toast({
+          title: "Authentication Error",
+          description: "You need to be logged in to reject sponsorships.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Make a direct axios call instead of using authAxios
+      const response = await axios({
+        method: 'PATCH',
+        url: `${config.apiUrl}/sponsorships/${id}/reject`,
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
+        data: {},
         withCredentials: true
       });
       
@@ -345,13 +421,17 @@ const DashboardTabs = () => {
         title: "Sponsorship Rejected",
         description: "The sponsorship has been rejected.",
       });
+      
+      // Refresh the data after rejection
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     } catch (err: any) {
       console.error('Error rejecting sponsorship:', {
         message: err.message,
         status: err.response?.status,
         statusText: err.response?.statusText,
-        data: err.response?.data,
-        headers: err.response?.headers
+        data: err.response?.data
       });
       
       // Provide more specific error messages based on the error type
@@ -364,13 +444,13 @@ const DashboardTabs = () => {
       } else if (err.response?.status === 401) {
         toast({
           title: "Authentication Error",
-          description: "Your session may have expired. Please log in again.",
+          description: "You need to be logged in to reject sponsorships.",
           variant: "destructive",
         });
       } else {
         toast({
           title: "Error",
-          description: err.response?.data?.message || "Failed to reject sponsorship. Please try again.",
+          description: `Failed to reject sponsorship: ${err.response?.data?.message || err.message}`,
           variant: "destructive",
         });
       }
