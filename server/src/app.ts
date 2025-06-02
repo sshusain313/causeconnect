@@ -9,6 +9,7 @@ import sponsorshipRoutes from './routes/sponsorshipRoutes';
 import claimRoutes from './routes/claims';
 import uploadRoutes from './routes/uploadRoutes';
 import otpRoutes from './routes/otpRoutes';
+import distributionLocationRoutes from './routes/distributionLocationRoutes';
 import { authGuard, adminGuard } from './middleware/authGuard';
 import configureStaticFiles from './middleware/staticFiles';
 import copyUploadsToPublic from './utils/copyUploadsToPublic';
@@ -18,8 +19,8 @@ const app: Application = express();
 
 // Middleware
 // Using type assertions to fix TypeScript errors
-app.use((express as any).json());
-app.use((express as any).urlencoded({ extended: true }));
+app.use((express as any).json({ limit: '10mb' }));
+app.use((express as any).urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 // Configure CORS to allow requests from the frontend domain
 app.use(cors({
@@ -110,6 +111,7 @@ app.use('/api/sponsorships', sponsorshipRoutes as any);
 app.use('/api/claims', claimRoutes as any);
 app.use('/api/upload', uploadRoutes as any);
 app.use('/api/otp', otpRoutes as any);
+app.use('/api/distribution-locations', distributionLocationRoutes as any);
 
 // Protected route example
 app.get('/api/profile', authGuard as any, (req: Request, res: Response) => {
