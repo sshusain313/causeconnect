@@ -76,10 +76,12 @@ const App: React.FC = () => {
                 <Route path="/why-claim" element={<WhyClaimPage />} />
                 
                 {/* Claimer Journey Routes */}
-                <Route path="/claim/:id" element={<ClaimFormPage />} />
+                {/* Fix route ordering - more specific routes must come before dynamic routes */}
                 <Route path="/claim/verify" element={<OtpVerificationPage />} />
                 <Route path="/claim/confirmed" element={<ClaimConfirmedPage />} />
+                <Route path="/claim/magic-link" element={<MagicLinkClaimPage />} />
                 <Route path="/claim/status/:id" element={<ClaimStatusPage />} />
+                <Route path="/claim/:id" element={<ClaimFormPage />} />
                 <Route path="/waitlist/:id" element={<JoinWaitlistPage />} />
                 <Route path="/waitlist/confirmed" element={<WaitlistConfirmationPage />} />
                 <Route path="/claim/magic-link" element={<MagicLinkClaimPage />} />
